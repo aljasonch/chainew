@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
+import { TableRowSkeleton } from "@/components/ui/Skeleton";
 import {
     Plus,
     Search,
@@ -86,7 +87,7 @@ export default function ArticlesPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fadeIn">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-zinc-900">Articles</h1>
@@ -100,7 +101,6 @@ export default function ArticlesPage() {
                 </Link>
             </div>
 
-            {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -124,8 +124,7 @@ export default function ArticlesPage() {
                 />
             </div>
 
-            {/* Articles Table */}
-            <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">
+            <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden transition-shadow hover:shadow-md">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-zinc-50 border-b border-zinc-200">
@@ -152,20 +151,25 @@ export default function ArticlesPage() {
                         </thead>
                         <tbody className="divide-y divide-zinc-200">
                             {loading ? (
-                                <tr>
-                                    <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
-                                        Loading...
-                                    </td>
-                                </tr>
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <TableRowSkeleton key={i} columns={6} />
+                                ))
                             ) : articles?.items.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
+                                    <td
+                                        colSpan={6}
+                                        className="px-4 py-8 text-center text-zinc-500"
+                                    >
                                         No articles found
                                     </td>
                                 </tr>
                             ) : (
-                                articles?.items.map((article) => (
-                                    <tr key={article._id} className="hover:bg-zinc-50">
+                                articles?.items.map((article, index) => (
+                                    <tr
+                                        key={article._id}
+                                        className="hover:bg-zinc-50 transition-colors animate-fadeIn"
+                                        style={{ animationDelay: `${index * 0.05}s` }}
+                                    >
                                         <td className="px-4 py-3">
                                             <div className="font-medium text-zinc-900 truncate max-w-[200px] lg:max-w-[300px]">
                                                 {article.title}

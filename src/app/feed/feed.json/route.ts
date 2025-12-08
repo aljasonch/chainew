@@ -16,15 +16,15 @@ export async function GET() {
 
     const feed = {
         version: "https://jsonfeed.org/version/1.1",
-        title: "NewsPortal",
+        title: "Chainew",
         home_page_url: baseUrl,
         feed_url: `${baseUrl}/feed/feed.json`,
-        description: "Latest news and updates from NewsPortal",
+        description: "Latest news and updates from Chainew",
         items: articles.map((article) => {
             const authorName =
                 article.authorId && typeof article.authorId === "object"
                     ? (article.authorId as { name?: string }).name
-                    : "NewsPortal";
+                    : "Chainew";
 
             return {
                 id: `${baseUrl}/article/${article.slug}`,

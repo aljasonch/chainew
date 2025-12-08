@@ -17,9 +17,9 @@ export async function GET() {
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>NewsPortal</title>
+    <title>Chainew</title>
     <link>${baseUrl}</link>
-    <description>Latest news and updates from NewsPortal</description>
+    <description>Latest news and updates from Chainew</description>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${baseUrl}/feed/rss.xml" rel="self" type="application/rss+xml"/>
@@ -29,7 +29,7 @@ export async function GET() {
         const authorName =
             article.authorId && typeof article.authorId === "object"
                 ? (article.authorId as { name?: string }).name
-                : "NewsPortal";
+                : "Chainew";
 
         xml += `    <item>
       <title>${escapeXml(article.title)}</title>
@@ -37,7 +37,7 @@ export async function GET() {
       <guid isPermaLink="true">${baseUrl}/article/${article.slug}</guid>
       <description>${escapeXml(article.summary)}</description>
       <pubDate>${new Date(article.publishedAt!).toUTCString()}</pubDate>
-      <author>${escapeXml(authorName || "NewsPortal")}</author>
+      <author>${escapeXml(authorName || "Chainew")}</author>
     </item>
 `;
     }

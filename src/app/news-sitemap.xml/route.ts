@@ -29,7 +29,7 @@ export async function GET() {
     <loc>${baseUrl}/article/${article.slug}</loc>
     <news:news>
       <news:publication>
-        <news:name>NewsPortal</news:name>
+        <news:name>Chainew</news:name>
         <news:language>en</news:language>
       </news:publication>
       <news:publication_date>${new Date(article.publishedAt!).toISOString()}</news:publication_date>

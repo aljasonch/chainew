@@ -1,24 +1,22 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "NewsPortal - Your Trusted News Source",
-    template: "%s | NewsPortal",
+    default: "Chainew - Your Trusted Tech News Source",
+    template: "%s | Chainew",
   },
   description:
-    "Stay informed with the latest news on technology, business, politics, sports, and more.",
-  keywords: ["news", "technology", "business", "politics", "sports"],
-  authors: [{ name: "NewsPortal" }],
+    "Stay informed with the latest news on AI, software development, cybersecurity, and emerging technologies.",
+  keywords: ["news", "technology", "AI", "software", "cybersecurity", "chainew"],
+  authors: [{ name: "Chainew" }],
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "NewsPortal",
+    siteName: "Chainew",
   },
   twitter: {
     card: "summary_large_image",
@@ -36,12 +34,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
+      <body className={`${inter.className} antialiased`} style={{ background: 'var(--color-bg-primary)' }}>
+        {children}
       </body>
     </html>
   );

@@ -1,33 +1,33 @@
 import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-    variant?: "default" | "secondary" | "success" | "warning" | "destructive";
-}
-
-const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-    ({ className, variant = "default", ...props }, ref) => {
-        const variants = {
-            default: "bg-zinc-900 text-white",
-            secondary: "bg-zinc-200 text-zinc-900",
-            success: "bg-green-600 text-white",
-            warning: "bg-amber-500 text-white",
-            destructive: "bg-red-600 text-white",
-        };
-
-        return (
-            <span
-                ref={ref}
-                className={cn(
-                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                    variants[variant],
-                    className
-                )}
-                {...props}
-            />
-        );
+const badgeVariants = cva(
+    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors",
+    {
+        variants: {
+            variant: {
+                default: "badge-primary",
+                secondary: "badge-secondary",
+                accent: "badge-accent",
+                medium: "badge-medium",
+                success: "bg-[var(--color-success-light)] text-emerald-700",
+                warning: "bg-[var(--color-warning-light)] text-amber-700",
+                destructive: "bg-[var(--color-error-light)] text-red-700",
+            },
+        },
+        defaultVariants: {
+            variant: "default",
+        },
     }
 );
-Badge.displayName = "Badge";
 
-export { Badge };
+export interface BadgeProps
+    extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> { }
+
+export function Badge({ className, variant, ...props }: BadgeProps) {
+    return (
+        <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    );
+}

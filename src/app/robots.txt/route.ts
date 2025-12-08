@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export async function GET() {
-    const robotsTxt = `# Robots.txt for NewsPortal
+    const robotsTxt = `# Robots.txt for Chainew
 
 User-agent: *
 Allow: /

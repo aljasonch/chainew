@@ -18,38 +18,53 @@ interface ArticleCardProps {
         };
     };
     featured?: boolean;
+    index?: number;
 }
 
-export function ArticleCard({ article, featured = false }: ArticleCardProps) {
+export function ArticleCard({ article, featured = false, index = 0 }: ArticleCardProps) {
+    const staggerClass = index < 10 ? `stagger-${index + 1}` : "";
+
     return (
         <article
-            className={`bg-white border border-zinc-200 rounded-lg overflow-hidden hover:border-zinc-400 transition-colors ${featured ? "md:flex" : ""
-                }`}
+            className={`
+        rounded-lg overflow-hidden 
+        hover-lift transition-smooth
+        animate-fadeInUp animate-on-load ${staggerClass}
+        ${featured ? "md:flex" : ""}
+      `}
+            style={{
+                animationFillMode: 'forwards',
+                background: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)'
+            }}
         >
-            {/* Image */}
             <div
-                className={`bg-zinc-100 ${featured ? "md:w-1/2 h-48 md:h-auto" : "h-48"
+                className={`overflow-hidden ${featured ? "md:w-1/2 h-48 md:h-auto" : "h-48"
                     }`}
+                style={{ background: 'var(--color-muted)' }}
             >
                 {article.seo?.ogImageUrl ? (
                     <img
                         src={article.seo.ogImageUrl}
                         alt={article.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-400">
-                        No Image
+                    <div className="w-full h-full flex items-center justify-center text-accent">
+                        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                     </div>
                 )}
             </div>
 
-            {/* Content */}
             <div className={`p-4 ${featured ? "md:w-1/2 md:p-6" : ""}`}>
                 <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary">{article.category}</Badge>
+                    <Badge variant="accent" className="transition-colors">
+                        {article.category}
+                    </Badge>
                     {article.publishedAt && (
-                        <span className="text-sm text-zinc-500">
+                        <span className="text-sm text-secondary">
                             {formatDateShort(article.publishedAt)}
                         </span>
                     )}
@@ -57,7 +72,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
 
                 <Link href={`/article/${article.slug}`}>
                     <h2
-                        className={`font-bold text-zinc-900 hover:underline ${featured ? "text-xl md:text-2xl" : "text-lg"
+                        className={`font-bold text-primary hover:text-accent transition-colors ${featured ? "text-xl md:text-2xl" : "text-lg"
                             }`}
                     >
                         {article.title}
@@ -65,15 +80,15 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
                 </Link>
 
                 <p
-                    className={`mt-2 text-zinc-600 ${featured ? "line-clamp-3" : "line-clamp-2"
+                    className={`mt-2 text-secondary ${featured ? "line-clamp-3" : "line-clamp-2"
                         }`}
                 >
                     {article.summary}
                 </p>
 
                 {article.authorId?.name && (
-                    <p className="mt-3 text-sm text-zinc-500">
-                        By {article.authorId.name}
+                    <p className="mt-3 text-sm text-secondary">
+                        By <span className="text-accent font-medium">{article.authorId.name}</span>
                     </p>
                 )}
             </div>

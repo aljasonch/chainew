@@ -38,11 +38,11 @@ export function JsonLd({ article }: JsonLdProps) {
             : undefined,
         author: {
             "@type": "Person",
-            name: article.authorId?.name || "NewsPortal",
+            name: article.authorId?.name || "Chainew",
         },
         publisher: {
             "@type": "Organization",
-            name: "NewsPortal",
+            name: "Chainew",
             logo: {
                 "@type": "ImageObject",
                 url: `${baseUrl}/logo.png`,

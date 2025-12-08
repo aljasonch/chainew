@@ -1,16 +1,16 @@
-import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
     title: string;
-    value: string | number;
+    value: number | string;
     description?: string;
     icon: LucideIcon;
     trend?: {
         value: number;
         isPositive: boolean;
     };
-    className?: string;
+    index?: number;
 }
 
 export function StatsCard({
@@ -19,36 +19,46 @@ export function StatsCard({
     description,
     icon: Icon,
     trend,
-    className,
+    index = 0,
 }: StatsCardProps) {
+    const staggerClass = index < 10 ? `stagger-${index + 1}` : "";
+
     return (
         <div
             className={cn(
-                "bg-white border border-zinc-200 rounded-lg p-6",
-                className
+                "rounded-lg p-6",
+                "hover-lift transition-all duration-200",
+                "animate-fadeInUp animate-on-load",
+                staggerClass
             )}
+            style={{
+                animationFillMode: "forwards",
+                background: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)'
+            }}
         >
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-sm font-medium text-zinc-500">{title}</p>
-                    <p className="mt-2 text-3xl font-bold text-zinc-900">{value}</p>
+                    <p className="text-sm font-medium text-secondary">{title}</p>
+                    <p className="text-2xl font-bold text-primary mt-1">{value}</p>
                     {description && (
-                        <p className="mt-1 text-sm text-zinc-400">{description}</p>
+                        <p className="text-sm text-accent mt-1">{description}</p>
                     )}
                     {trend && (
-                        <p
-                            className={cn(
-                                "mt-1 text-sm font-medium",
-                                trend.isPositive ? "text-green-600" : "text-red-600"
-                            )}
+                        <div
+                            className="flex items-center gap-1 mt-2 text-sm"
+                            style={{ color: trend.isPositive ? 'var(--color-success)' : 'var(--color-error)' }}
                         >
-                            {trend.isPositive ? "+" : "-"}
-                            {Math.abs(trend.value)}% from last month
-                        </p>
+                            <span>{trend.isPositive ? "+" : ""}{trend.value}%</span>
+                            <span className="text-secondary">vs last month</span>
+                        </div>
                     )}
                 </div>
-                <div className="p-3 bg-zinc-100 rounded-lg">
-                    <Icon className="w-6 h-6 text-zinc-600" />
+                <div
+                    className="p-3 rounded-lg transition-transform duration-200 hover:scale-110"
+                    style={{ background: 'var(--color-accent)' }}
+                >
+                    <Icon className="w-6 h-6 text-inverse" />
                 </div>
             </div>
         </div>

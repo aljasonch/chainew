@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get("callbackUrl") || "/admin";
@@ -43,18 +43,23 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-4">
-            <Card className="w-full max-w-md">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">News CMS Login</CardTitle>
-                    <p className="text-zinc-500 mt-2">
+        <div className="w-full max-w-md animate-fadeInUp" style={{ animationFillMode: 'forwards' }}>
+            <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-primary">Chainew</h1>
+                <p className="text-secondary mt-2">News CMS</p>
+            </div>
+
+            <Card className="border-default shadow-lg">
+                <CardHeader className="text-center pb-2">
+                    <CardTitle className="text-xl text-primary">Welcome Back</CardTitle>
+                    <p className="text-secondary mt-1 text-sm">
                         Sign in to access the admin dashboard
                     </p>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
-                            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm">
+                            <div className="p-3 border rounded-md text-sm animate-fadeIn" style={{ background: 'var(--color-error-light)', borderColor: 'var(--color-error)', color: 'var(--color-error)' }}>
                                 {error}
                             </div>
                         )}
@@ -80,6 +85,28 @@ export default function LoginPage() {
                     </form>
                 </CardContent>
             </Card>
+
+            <p className="text-center text-sm text-secondary mt-6">
+                Back to{" "}
+                <a href="/" className="text-primary hover:text-accent font-medium transition-colors">
+                    Chainew
+                </a>
+            </p>
+        </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--color-muted)' }}>
+            <Suspense fallback={
+                <div className="w-full max-w-md text-center">
+                    <div className="text-3xl font-bold text-primary mb-4">Chainew</div>
+                    <p className="text-secondary">Loading...</p>
+                </div>
+            }>
+                <LoginForm />
+            </Suspense>
         </div>
     );
 }

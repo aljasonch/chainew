@@ -82,7 +82,6 @@ export default async function ArticlePage({ params }: PageProps) {
             ? (article.authorId as { name?: string }).name
             : "Unknown";
 
-    // Simple markdown to HTML (in production, use next-mdx-remote properly)
     const renderContent = (mdx: string) => {
         let html = mdx
             .replace(
@@ -128,7 +127,6 @@ export default async function ArticlePage({ params }: PageProps) {
             <JsonLd article={JSON.parse(JSON.stringify(article))} />
 
             <article className="max-w-4xl mx-auto px-4 py-8">
-                {/* Back link */}
                 <Link
                     href="/"
                     className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 mb-6"
@@ -137,7 +135,6 @@ export default async function ArticlePage({ params }: PageProps) {
                     Back to Home
                 </Link>
 
-                {/* Header */}
                 <header className="mb-8">
                     <div className="flex items-center gap-2 mb-4">
                         <Link href={`/category/${article.category}`}>
@@ -161,7 +158,6 @@ export default async function ArticlePage({ params }: PageProps) {
                     <p className="text-zinc-500">By {authorName}</p>
                 </header>
 
-                {/* Featured Image */}
                 {article.seo.ogImageUrl && (
                     <div className="mb-8">
                         <img
@@ -172,18 +168,15 @@ export default async function ArticlePage({ params }: PageProps) {
                     </div>
                 )}
 
-                {/* Summary */}
                 <div className="bg-zinc-50 border-l-4 border-zinc-900 p-4 mb-8">
                     <p className="text-zinc-700 font-medium">{article.summary}</p>
                 </div>
 
-                {/* Content */}
                 <div
                     className="prose max-w-none"
                     dangerouslySetInnerHTML={{ __html: renderContent(article.content_mdx) }}
                 />
 
-                {/* Tags */}
                 {article.tags && article.tags.length > 0 && (
                     <div className="mt-8 pt-8 border-t border-zinc-200">
                         <h3 className="text-sm font-medium text-zinc-500 mb-2">Tags</h3>
@@ -202,7 +195,6 @@ export default async function ArticlePage({ params }: PageProps) {
                     </div>
                 )}
 
-                {/* Sources */}
                 {article.sources && article.sources.length > 0 && (
                     <div className="mt-8 pt-8 border-t border-zinc-200">
                         <h3 className="text-lg font-semibold text-zinc-900 mb-4">

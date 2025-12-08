@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
-import { cn } from "@/lib/utils";
+import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
 import {
     LayoutDashboard,
     FileText,
@@ -14,16 +14,17 @@ import {
     LogOut,
     Menu,
     X,
+    ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/articles", label: "Articles", icon: FileText },
-    { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
     { href: "/admin/sources", label: "Sources", icon: Link2 },
     { href: "/admin/review", label: "Review Queue", icon: ClipboardCheck },
     { href: "/admin/revisions", label: "Revisions", icon: History },
+    { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
 ];
 
 export function Sidebar() {
@@ -31,93 +32,200 @@ export function Sidebar() {
     const { data: session } = useSession();
     const [mobileOpen, setMobileOpen] = useState(false);
 
-    const isAdmin = session?.user?.role === "admin";
-
     const filteredNavItems = navItems.filter(
-        (item) => !item.adminOnly || isAdmin
+        (item) => !item.adminOnly || session?.user.role === "admin"
     );
 
     return (
         <>
-            {/* Mobile menu button */}
-            <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white border border-zinc-200 rounded-md shadow-sm"
+            <div
+                className="lg:hidden fixed top-0 left-0 right-0 px-4 py-3 flex items-center justify-between z-40"
+                style={{ background: 'var(--color-bg-card)', borderBottom: '1px solid var(--color-border)' }}
             >
-                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-
-            {/* Overlay */}
-            {mobileOpen && (
-                <div
-                    className="lg:hidden fixed inset-0 bg-black/50 z-40"
-                    onClick={() => setMobileOpen(false)}
-                />
-            )}
-
-            {/* Sidebar */}
-            <aside
-                className={cn(
-                    "fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-zinc-200 transition-transform lg:translate-x-0",
-                    mobileOpen ? "translate-x-0" : "-translate-x-full"
-                )}
-            >
-                <div className="flex flex-col h-full">
-                    {/* Logo */}
-                    <div className="h-16 flex items-center px-6 border-b border-zinc-200">
-                        <Link href="/admin" className="text-xl font-bold text-zinc-900">
-                            News Admin
-                        </Link>
+                <Link href="/admin" className="font-bold text-primary">
+                    Chainew Admin
+                </Link>
+                <button
+                    onClick={() => setMobileOpen(!mobileOpen)}
+                    className="p-2 rounded-md hover:bg-muted transition-colors text-primary"
+                >
+                    <div className="relative w-6 h-6">
+                        <Menu
+                            size={24}
+                            className={cn(
+                                "absolute inset-0 transition-all duration-200",
+                                mobileOpen ? "opacity-0 rotate-90" : "opacity-100"
+                            )}
+                        />
+                        <X
+                            size={24}
+                            className={cn(
+                                "absolute inset-0 transition-all duration-200",
+                                mobileOpen ? "opacity-100" : "opacity-0 -rotate-90"
+                            )}
+                        />
                     </div>
+                </button>
+            </div>
 
-                    {/* Navigation */}
-                    <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-                        {filteredNavItems.map((item) => {
-                            const Icon = item.icon;
-                            const isActive =
-                                pathname === item.href ||
-                                (item.href !== "/admin" && pathname.startsWith(item.href));
+            <aside
+                className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 w-64"
+                style={{ background: 'var(--color-bg-card)', borderRight: '1px solid var(--color-border)' }}
+            >
+                <div className="p-6">
+                    <Link
+                        href="/admin"
+                        className="text-xl font-bold text-primary hover:text-accent transition-colors"
+                    >
+                        Chainew
+                    </Link>
+                    <span className="ml-2 text-xs font-medium text-accent uppercase tracking-wider">
+                        Admin
+                    </span>
+                </div>
 
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    onClick={() => setMobileOpen(false)}
+                <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+                    {filteredNavItems.map((item, index) => {
+                        const isActive =
+                            pathname === item.href ||
+                            (item.href !== "/admin" && pathname.startsWith(item.href));
+
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={cn(
+                                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 group"
+                                )}
+                                style={{
+                                    animationDelay: `${index * 0.05}s`,
+                                    background: isActive ? 'var(--color-primary)' : 'transparent',
+                                    color: isActive ? 'var(--color-text-inverse)' : 'var(--color-text-primary)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = 'var(--color-muted)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.background = 'transparent';
+                                    }
+                                }}
+                            >
+                                <item.icon size={18} />
+                                <span className="flex-1">{item.label}</span>
+                                <ChevronRight
+                                    size={14}
                                     className={cn(
-                                        "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                                        "transition-transform duration-200",
                                         isActive
-                                            ? "bg-zinc-900 text-white"
-                                            : "text-zinc-600 hover:bg-zinc-100"
+                                            ? "opacity-100 translate-x-0"
+                                            : "opacity-0 -translate-x-2 group-hover:opacity-50 group-hover:translate-x-0"
                                     )}
-                                >
-                                    <Icon size={18} />
-                                    {item.label}
-                                </Link>
-                            );
-                        })}
-                    </nav>
+                                />
+                            </Link>
+                        );
+                    })}
+                </nav>
 
-                    {/* User info & logout */}
-                    <div className="p-4 border-t border-zinc-200">
-                        <div className="mb-3 px-3">
-                            <p className="text-sm font-medium text-zinc-900 truncate">
-                                {session?.user?.name}
+                <div
+                    className="p-4"
+                    style={{ borderTop: '1px solid var(--color-border)' }}
+                >
+                    <div className="flex items-center gap-3 mb-3">
+                        <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+                            style={{ background: 'var(--color-accent)', color: 'var(--color-text-inverse)' }}
+                        >
+                            {session?.user.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-primary truncate">
+                                {session?.user.name}
                             </p>
-                            <p className="text-xs text-zinc-500 truncate">
-                                {session?.user?.email}
-                            </p>
-                            <p className="text-xs text-zinc-400 capitalize">
-                                {session?.user?.role}
+                            <p className="text-xs text-accent capitalize">
+                                {session?.user.role}
                             </p>
                         </div>
-                        <button
-                            onClick={() => signOut({ callbackUrl: "/login" })}
-                            className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50 transition-colors"
-                        >
-                            <LogOut size={18} />
-                            Logout
-                        </button>
                     </div>
+                    <button
+                        onClick={() => signOut({ callbackUrl: "/login" })}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors"
+                        style={{ color: 'var(--color-text-primary)' }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--color-error-light)';
+                            e.currentTarget.style.color = 'var(--color-error)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = 'var(--color-text-primary)';
+                        }}
+                    >
+                        <LogOut size={16} />
+                        Sign out
+                    </button>
+                </div>
+            </aside>
+
+            <div
+                className={cn(
+                    "lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity duration-300",
+                    mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+                )}
+                onClick={() => setMobileOpen(false)}
+            />
+
+            <aside
+                className={cn(
+                    "lg:hidden fixed top-0 left-0 bottom-0 w-64 z-50 flex flex-col transform transition-transform duration-300 ease-out"
+                )}
+                style={{
+                    background: 'var(--color-bg-card)',
+                    transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)'
+                }}
+            >
+                <div className="p-6" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <Link href="/admin" className="text-xl font-bold text-primary">
+                        Chainew Admin
+                    </Link>
+                </div>
+
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                    {filteredNavItems.map((item, index) => {
+                        const isActive =
+                            pathname === item.href ||
+                            (item.href !== "/admin" && pathname.startsWith(item.href));
+
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={() => setMobileOpen(false)}
+                                className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                                style={{
+                                    transform: mobileOpen ? "translateX(0)" : "translateX(-10px)",
+                                    opacity: mobileOpen ? 1 : 0,
+                                    transition: `all 0.2s ease ${index * 0.05}s`,
+                                    background: isActive ? 'var(--color-primary)' : 'transparent',
+                                    color: isActive ? 'var(--color-text-inverse)' : 'var(--color-text-primary)'
+                                }}
+                            >
+                                <item.icon size={18} />
+                                {item.label}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                <div className="p-4" style={{ borderTop: '1px solid var(--color-border)' }}>
+                    <button
+                        onClick={() => signOut({ callbackUrl: "/login" })}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors text-primary hover:bg-muted"
+                    >
+                        <LogOut size={16} />
+                        Sign out
+                    </button>
                 </div>
             </aside>
         </>

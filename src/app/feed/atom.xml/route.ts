@@ -16,19 +16,19 @@ export async function GET() {
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>NewsPortal</title>
+  <title>Chainew</title>
   <link href="${baseUrl}" rel="alternate"/>
   <link href="${baseUrl}/feed/atom.xml" rel="self"/>
   <id>${baseUrl}/</id>
   <updated>${new Date().toISOString()}</updated>
-  <subtitle>Latest news and updates from NewsPortal</subtitle>
+  <subtitle>Latest news and updates from Chainew</subtitle>
 `;
 
     for (const article of articles) {
         const authorName =
             article.authorId && typeof article.authorId === "object"
                 ? (article.authorId as { name?: string }).name
-                : "NewsPortal";
+                : "Chainew";
 
         xml += `  <entry>
     <title>${escapeXml(article.title)}</title>
@@ -38,7 +38,7 @@ export async function GET() {
     <published>${new Date(article.publishedAt!).toISOString()}</published>
     <summary>${escapeXml(article.summary)}</summary>
     <author>
-      <name>${escapeXml(authorName || "NewsPortal")}</name>
+      <name>${escapeXml(authorName || "Chainew")}</name>
     </author>
   </entry>
 `;

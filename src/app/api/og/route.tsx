@@ -6,7 +6,7 @@ export const runtime = "edge";
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
-    const title = searchParams.get("title") || "NewsPortal";
+    const title = searchParams.get("title") || "Chainew";
     const subtitle = searchParams.get("subtitle") || "";
     const category = searchParams.get("category") || "";
 
@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
                     padding: "60px",
                 }}
             >
-                {/* Category badge */}
                 {category && (
                     <div
                         style={{
@@ -48,7 +47,6 @@ export async function GET(request: NextRequest) {
                     </div>
                 )}
 
-                {/* Title */}
                 <div
                     style={{
                         display: "flex",
@@ -63,7 +61,6 @@ export async function GET(request: NextRequest) {
                     {title.length > 80 ? title.substring(0, 80) + "..." : title}
                 </div>
 
-                {/* Subtitle */}
                 {subtitle && (
                     <div
                         style={{
@@ -80,7 +77,6 @@ export async function GET(request: NextRequest) {
                     </div>
                 )}
 
-                {/* Logo */}
                 <div
                     style={{
                         position: "absolute",
@@ -92,7 +88,7 @@ export async function GET(request: NextRequest) {
                         color: "#ffffff",
                     }}
                 >
-                    NewsPortal
+                    Chainew
                 </div>
             </div>
         ),

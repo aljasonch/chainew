@@ -36,14 +36,14 @@ interface ArticleFormData {
 }
 
 const categories = [
-    "Technology",
-    "Business",
-    "Politics",
-    "Sports",
-    "Entertainment",
-    "Health",
-    "Science",
-    "World",
+    "AI & ML",
+    "Software Dev",
+    "Cybersecurity",
+    "Cloud",
+    "Mobile",
+    "Gaming",
+    "Startups",
+    "Gadgets",
 ];
 
 export default function ArticleEditorPage({
@@ -208,7 +208,6 @@ export default function ArticleEditorPage({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <Link href="/admin/articles">
@@ -246,7 +245,6 @@ export default function ArticleEditorPage({
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
@@ -348,7 +346,6 @@ export default function ArticleEditorPage({
                     </Card>
                 </div>
 
-                {/* Sidebar */}
                 <div className="space-y-6">
                     <Card>
                         <CardHeader>

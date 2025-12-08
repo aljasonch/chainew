@@ -5,6 +5,7 @@ import dbConnect from "@/lib/db";
 import User from "@/models/User";
 
 export const authConfig: NextAuthConfig = {
+    trustHost: true,
     providers: [
         CredentialsProvider({
             name: "credentials",
@@ -47,7 +48,7 @@ export const authConfig: NextAuthConfig = {
     ],
     session: {
         strategy: "jwt",
-        maxAge: 30 * 24 * 60 * 60, // 30 days
+        maxAge: 30 * 24 * 60 * 60,
     },
     pages: {
         signIn: "/login",
