@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Clock, ArrowRight, Newspaper } from "lucide-react";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
+import "@/models/User";
 import { formatDateShort } from "@/lib/utils";
 
 async function getLatestArticles() {
@@ -42,7 +43,7 @@ export default async function LatestPage() {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        {articles.map((article: any, index: number) => (
+                        {articles.map((article: { _id: string; slug: string; category: string; publishedAt?: string; title: string; summary: string; authorId?: { name?: string } }, index: number) => (
                             <Link
                                 key={article._id}
                                 href={`/article/${article.slug}`}

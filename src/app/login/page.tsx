@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -88,9 +89,9 @@ function LoginForm() {
 
             <p className="text-center text-sm text-secondary mt-6">
                 Back to{" "}
-                <a href="/" className="text-primary hover:text-accent font-medium transition-colors">
+                <Link href="/" className="text-primary hover:text-accent font-medium transition-colors">
                     Chainew
-                </a>
+                </Link>
             </p>
         </div>
     );

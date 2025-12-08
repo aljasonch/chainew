@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/Badge";
 import { TrendingUp, ArrowUpRight, Newspaper } from "lucide-react";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
+import "@/models/User";
 
 async function getTrendingArticles() {
     await dbConnect();
@@ -44,7 +45,7 @@ export default async function TrendingPage() {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {articles.map((article: any, index: number) => (
+                        {articles.map((article: { _id: string; slug: string; category: string; title: string; summary: string }, index: number) => (
                             <Link
                                 key={article._id}
                                 href={`/article/${article.slug}`}

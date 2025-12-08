@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ArrowUpRight, Zap, Sparkles, Cpu, Code, Shield, Cloud, Smartphone, Gamepad2, Rocket, CircuitBoard, Newspaper } from "lucide-react";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
+import "@/models/User";
 
 const categoryIcons: Record<string, React.ElementType> = {
   "AI & ML": Cpu,
@@ -166,7 +167,7 @@ export default async function HomePage() {
               </Link>
             )}
 
-            {featuredArticles.slice(1, 4).map((article, index) => {
+            {featuredArticles.slice(1, 4).map((article: { _id: string; slug: string; category: string; title: string }, index: number) => {
               const Icon = categoryIcons[article.category] || Newspaper;
               const bgColors = ['bg-secondary', 'bg-accent', 'bg-muted'];
               const isLight = index === 2;
@@ -205,7 +206,7 @@ export default async function HomePage() {
             </div>
 
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-              {latestArticles.map((article, index) => (
+              {latestArticles.map((article: { _id: string; slug: string; category: string; title: string }) => (
                 <Link
                   key={article._id}
                   href={`/article/${article.slug}`}

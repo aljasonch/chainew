@@ -14,32 +14,20 @@ interface MdxEditorProps {
 export function MdxEditor({ value, onChange, className }: MdxEditorProps) {
     const [mode, setMode] = useState<"edit" | "preview">("edit");
 
-    // Simple markdown to HTML converter for preview
     const renderPreview = (mdx: string) => {
-        let html = mdx
-            // Headers
+        const html = mdx
             .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
             .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-6 mb-3">$1</h2>')
             .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-6 mb-4">$1</h1>')
-            // Bold
             .replace(/\*\*(.*)\*\*/gim, "<strong>$1</strong>")
-            // Italic
             .replace(/\*(.*)\*/gim, "<em>$1</em>")
-            // Links
             .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" class="text-blue-600 underline">$1</a>')
-            // Images
             .replace(/!\[([^\]]*)\]\(([^)]+)\)/gim, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-4" />')
-            // Code blocks
             .replace(/```([\s\S]*?)```/gim, '<pre class="bg-zinc-100 p-4 rounded-lg overflow-x-auto my-4"><code>$1</code></pre>')
-            // Inline code
             .replace(/`([^`]+)`/gim, '<code class="bg-zinc-100 px-1 rounded">$1</code>')
-            // Blockquotes
             .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-zinc-300 pl-4 italic my-4">$1</blockquote>')
-            // Unordered lists
             .replace(/^\- (.*$)/gim, '<li class="ml-4">$1</li>')
-            // Paragraphs
             .replace(/\n\n/gim, "</p><p class=\"my-4\">")
-            // Line breaks
             .replace(/\n/gim, "<br />");
 
         return `<p class="my-4">${html}</p>`;
@@ -47,7 +35,6 @@ export function MdxEditor({ value, onChange, className }: MdxEditorProps) {
 
     return (
         <div className={cn("border border-zinc-200 rounded-lg overflow-hidden", className)}>
-            {/* Toolbar */}
             <div className="flex items-center gap-1 p-2 border-b border-zinc-200 bg-zinc-50">
                 <button
                     type="button"
@@ -77,7 +64,6 @@ export function MdxEditor({ value, onChange, className }: MdxEditorProps) {
                 </button>
             </div>
 
-            {/* Editor / Preview */}
             {mode === "edit" ? (
                 <Textarea
                     value={value}

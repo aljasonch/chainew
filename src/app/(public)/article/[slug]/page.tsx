@@ -83,7 +83,7 @@ export default async function ArticlePage({ params }: PageProps) {
             : "Unknown";
 
     const renderContent = (mdx: string) => {
-        let html = mdx
+        const html = mdx
             .replace(
                 /^### (.*$)/gim,
                 '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>'
