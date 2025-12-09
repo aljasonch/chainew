@@ -5,7 +5,8 @@ import { getToken } from "next-auth/jwt";
 const secret = process.env.NEXTAUTH_SECRET;
 
 export async function middleware(request: NextRequest) {
-    const token = await getToken({ req: request, secret });
+    const secureCookie = request.nextUrl.protocol === "https:";
+    const token = await getToken({ req: request, secret, secureCookie });
     const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
     const isLoginPage = request.nextUrl.pathname === "/login";
 
