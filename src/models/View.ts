@@ -19,7 +19,9 @@ const ViewSchema: Schema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-        expires: 86400, 
+        // TTL index: automatically delete view records after 24 hours (86400 seconds)
+        // This allows the same IP to be counted again after one day, effectively tracking daily unique views
+        expires: 86400,
     },
 });
 

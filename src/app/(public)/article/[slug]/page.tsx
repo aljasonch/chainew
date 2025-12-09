@@ -28,18 +28,45 @@ async function getArticle(slug: string) {
     return article;
 }
 
-async function trackArticleView(articleId: string) {
+async function trackArticleView(articleId: string): Promise<number | null> {
     try {
+        // Ensure database connection
+        await dbConnect();
+
+        // Get IP address with fallback to x-real-ip header
         const headersList = await headers();
-        const ip = headersList.get("x-forwarded-for") || "unknown";
+        let ip = headersList.get("x-forwarded-for");
+        if (!ip) {
+            ip = headersList.get("x-real-ip");
+        }
+        if (!ip) {
+            // Skip tracking if IP is unknown to avoid all unknown users sharing the same view entry
+            return null;
+        }
         const finalIp = ip.split(",")[0].trim();
 
+        // Create view record (will fail with duplicate key error if already exists)
         await View.create({ articleId, ip: finalIp });
 
-        await Article.findByIdAndUpdate(articleId, { $inc: { views: 1 } });
-        return true;
-    } catch (error) {
-        return false;
+        // Atomically increment the view count and return the updated document
+        const updatedArticle = await Article.findByIdAndUpdate(
+            articleId,
+            { $inc: { views: 1 } },
+            { new: true, select: 'views' }
+        );
+        
+        return updatedArticle?.views ?? null;
+    } catch (error: unknown) {
+        // Duplicate key error (MongoDB error code 11000) is expected if the view already exists
+        if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
+            // Expected: view already tracked for this articleId/ip, return current count
+            await dbConnect();
+            const currentArticle = await Article.findById(articleId).select('views');
+            return currentArticle?.views ?? null;
+        }
+        // Unexpected error: log for debugging
+        console.error("Error tracking article view:", error);
+        return null;
     }
 }
 
@@ -91,19 +118,15 @@ export default async function ArticlePage({ params }: PageProps) {
     const { slug } = await params;
     const article = await getArticle(slug);
 
-    if (article) {
-        const incremented = await trackArticleView(article._id.toString());
-        if (incremented) {
-            if (typeof article.views === 'number') {
-                article.views++;
-            } else {
-                article.views = 1;
-            }
-        }
-    }
-
+    // Check if article exists before proceeding
     if (!article) {
         notFound();
+    }
+
+    // Track view and get updated view count
+    const updatedViewCount = await trackArticleView(article._id.toString());
+    if (updatedViewCount !== null) {
+        article.views = updatedViewCount;
     }
 
     const authorName =
