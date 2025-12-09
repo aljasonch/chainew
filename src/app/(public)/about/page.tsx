@@ -1,25 +1,18 @@
-import { Users, Target, Award, Globe, Cpu, Code, Shield, Zap } from "lucide-react";
-
-const stats = [
-    { icon: Users, value: "50K+", label: "Tech Readers" },
-    { icon: Target, value: "500+", label: "Tech Articles" },
-    { icon: Award, value: "50+", label: "Expert Writers" },
-    { icon: Globe, value: "100+", label: "Countries" },
-];
+import { Cpu, DollarSign, Coins, Building2 } from "lucide-react";
 
 const team = [
     {
         name: "Alfonsus Jason Christian",
         role: "Founder & Editor-in-Chief",
-        bio: "",
+        bio: "Passionate about technology and its intersection with finance, policy, and innovation. Dedicated to delivering insightful analysis on emerging trends.",
     },
 ];
 
 const coverage = [
-    { icon: Cpu, name: "AI & Machine Learning", desc: "LLMs, deep learning, generative AI" },
-    { icon: Code, name: "Software Development", desc: "Languages, frameworks, best practices" },
-    { icon: Shield, name: "Cybersecurity", desc: "Threats, vulnerabilities, defense" },
-    { icon: Zap, name: "Startups & Innovation", desc: "Funding, products, disruption" },
+    { icon: Cpu, name: "AI & Machine Learning", desc: "Latest developments in artificial intelligence, LLMs, and automation" },
+    { icon: DollarSign, name: "Finance", desc: "Market trends, fintech innovations, and economic analysis" },
+    { icon: Coins, name: "Blockchain", desc: "Cryptocurrency, DeFi, and decentralized technologies" },
+    { icon: Building2, name: "Public Affairs", desc: "Policy, regulation, and governance in the tech sector" },
 ];
 
 export default function AboutPage() {
@@ -31,7 +24,7 @@ export default function AboutPage() {
                         About <span className="text-accent">Chainew</span>
                     </h1>
                     <p className="text-xl text-muted animate-fadeInUp stagger-1" style={{ animationFillMode: 'forwards' }}>
-                        Your trusted source for cutting-edge tech news, developer insights, and industry analysis since 2024.
+                        Your trusted source for technology, finance, and policy insights since 2025.
                     </p>
                 </div>
             </section>
@@ -40,25 +33,11 @@ export default function AboutPage() {
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-primary mb-4">Our Mission</h2>
                     <p className="text-secondary text-lg leading-relaxed">
-                        At Chainew, we believe technology shapes the future. Our mission is to deliver accurate,
-                        insightful, and timely tech coverage that helps developers, engineers, and tech enthusiasts
-                        stay ahead of the curve. From AI breakthroughs to security vulnerabilities, from startup
-                        success stories to the latest programming frameworks – we cover it all.
+                        Chainew bridges the gap between technology and society. We deliver thoughtful analysis
+                        on artificial intelligence, blockchain innovation, financial markets, and public policy.
+                        Our goal is to help readers understand not just what&apos;s happening in tech, but why it
+                        matters for the world around us.
                     </p>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-                    {stats.map((stat, index) => (
-                        <div
-                            key={stat.label}
-                            className="bg-card border border-default rounded-xl p-6 text-center hover-lift animate-fadeInUp"
-                            style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
-                        >
-                            <stat.icon className="mx-auto mb-3 text-accent" size={32} />
-                            <p className="text-3xl font-bold text-primary">{stat.value}</p>
-                            <p className="text-sm text-secondary mt-1">{stat.label}</p>
-                        </div>
-                    ))}
                 </div>
             </section>
 
@@ -89,9 +68,9 @@ export default function AboutPage() {
                 <h2 className="text-3xl font-bold text-primary mb-8 text-center">Our Values</h2>
                 <div className="grid md:grid-cols-3 gap-6">
                     {[
-                        { title: "Technical Accuracy", desc: "Every article is reviewed by domain experts to ensure technical correctness." },
-                        { title: "Developer First", desc: "We write for developers, by developers. No clickbait, just quality content." },
-                        { title: "Cutting Edge", desc: "We cover emerging tech before it becomes mainstream, keeping you ahead." },
+                        { title: "Accuracy First", desc: "We prioritize factual reporting and thorough research in every piece we publish." },
+                        { title: "Clear Analysis", desc: "Complex topics explained in accessible language without sacrificing depth." },
+                        { title: "Forward Thinking", desc: "We explore emerging trends and their implications for business and society." },
                     ].map((value, index) => (
                         <div
                             key={value.title}
@@ -108,11 +87,11 @@ export default function AboutPage() {
             <section className="bg-muted py-16">
                 <div className="max-w-4xl mx-auto px-4">
                     <h2 className="text-3xl font-bold text-primary mb-8 text-center">Our Team</h2>
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="flex justify-center">
                         {team.map((member, index) => (
                             <div
                                 key={member.name}
-                                className="bg-card border border-default rounded-xl p-6 hover-lift animate-fadeInUp"
+                                className="bg-card border border-default rounded-xl p-6 hover-lift animate-fadeInUp max-w-md"
                                 style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
                             >
                                 <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-inverse text-xl font-bold mb-4">
