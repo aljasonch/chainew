@@ -60,6 +60,7 @@ async function trackArticleView(articleId: string): Promise<number | null> {
         // Duplicate key error (MongoDB error code 11000) is expected if the view already exists
         if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
             // Expected: view already tracked for this articleId/ip, return current count
+            await dbConnect();
             const currentArticle = await Article.findById(articleId).select('views');
             return currentArticle?.views ?? null;
         }
