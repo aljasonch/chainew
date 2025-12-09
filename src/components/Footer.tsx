@@ -2,13 +2,9 @@ import Link from "next/link";
 
 const categories = [
     "AI & ML",
-    "Software Dev",
-    "Cybersecurity",
-    "Cloud",
-    "Mobile",
-    "Gadgets",
-    "Gaming",
-    "Startups",
+    "Finance",
+    "Blockchain",
+    "Public Affairs",
 ];
 
 export function Footer() {

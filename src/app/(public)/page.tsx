@@ -1,30 +1,22 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
-import { ArrowUpRight, Zap, Sparkles, Cpu, Code, Shield, Cloud, Smartphone, Gamepad2, Rocket, CircuitBoard, Newspaper } from "lucide-react";
+import { ArrowUpRight, Zap, Sparkles, Cpu, DollarSign, Coins, Building2, Newspaper } from "lucide-react";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
 import "@/models/User";
 
 const categoryIcons: Record<string, React.ElementType> = {
   "AI & ML": Cpu,
-  "Software Dev": Code,
-  "Cybersecurity": Shield,
-  "Cloud": Cloud,
-  "Mobile": Smartphone,
-  "Gaming": Gamepad2,
-  "Startups": Rocket,
-  "Gadgets": CircuitBoard,
+  "Finance": DollarSign,
+  "Blockchain": Coins,
+  "Public Affairs": Building2,
 };
 
 const categories = [
   { name: "AI & ML", icon: Cpu },
-  { name: "Software Dev", icon: Code },
-  { name: "Cybersecurity", icon: Shield },
-  { name: "Cloud", icon: Cloud },
-  { name: "Mobile", icon: Smartphone },
-  { name: "Gaming", icon: Gamepad2 },
-  { name: "Startups", icon: Rocket },
-  { name: "Gadgets", icon: CircuitBoard },
+  { name: "Finance", icon: DollarSign },
+  { name: "Blockchain", icon: Coins },
+  { name: "Public Affairs", icon: Building2 },
 ];
 
 async function getHomePageData() {

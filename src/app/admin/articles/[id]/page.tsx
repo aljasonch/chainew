@@ -37,13 +37,9 @@ interface ArticleFormData {
 
 const categories = [
     "AI & ML",
-    "Software Dev",
-    "Cybersecurity",
-    "Cloud",
-    "Mobile",
-    "Gaming",
-    "Startups",
-    "Gadgets",
+    "Finance",
+    "Blockchain",
+    "Public Affairs",
 ];
 
 export default function ArticleEditorPage({
