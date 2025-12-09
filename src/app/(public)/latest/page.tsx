@@ -26,10 +26,10 @@ export default async function LatestPage() {
             <section className="bg-primary py-16">
                 <div className="max-w-7xl mx-auto px-4">
                     <h1 className="text-4xl md:text-5xl font-black text-inverse mb-4 animate-fadeInUp" style={{ animationFillMode: 'forwards' }}>
-                        Latest Tech News
+                        Latest News
                     </h1>
                     <p className="text-muted text-lg animate-fadeInUp stagger-1" style={{ animationFillMode: 'forwards' }}>
-                        Stay up to date with the most recent stories from the tech world
+                        Stay up to date with the most recent stories from around the world
                     </p>
                 </div>
             </section>
@@ -39,7 +39,7 @@ export default async function LatestPage() {
                     <div className="text-center py-16">
                         <Newspaper className="mx-auto text-secondary mb-4" size={48} />
                         <h2 className="text-xl font-bold text-primary mb-2">No Articles Yet</h2>
-                        <p className="text-secondary">Check back soon for the latest tech news.</p>
+                        <p className="text-secondary">Check back soon for the latest news.</p>
                     </div>
                 ) : (
                     <div className="space-y-6">

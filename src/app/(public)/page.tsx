@@ -68,7 +68,7 @@ export default async function HomePage() {
             <div className="flex items-center gap-3 mb-6 animate-fadeIn">
               <Zap className="text-muted" size={20} />
               <span className="text-muted text-sm font-medium tracking-widest uppercase">
-                Tech News
+                Hot News
               </span>
             </div>
 
@@ -98,7 +98,7 @@ export default async function HomePage() {
                 </h1>
 
                 <p className="text-2xl md:text-4xl text-muted font-light mb-8 animate-fadeInUp stagger-1" style={{ animationFillMode: 'forwards' }}>
-                  Your Trusted Tech News Source
+                  Your Trusted General News Source
                 </p>
 
                 <p className="text-muted animate-fadeInUp stagger-2" style={{ animationFillMode: 'forwards' }}>
@@ -225,7 +225,7 @@ export default async function HomePage() {
             Never Miss<br />a Story
           </h2>
           <p className="text-secondary mb-6 max-w-md">
-            Get the latest tech news delivered to your inbox. No spam, just quality content.
+            Get the latest news delivered to your inbox. No spam, just quality content.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <input

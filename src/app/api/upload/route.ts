@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import dbConnect from "@/lib/db";
+import Image from "@/models/Image";
 
 export async function POST(request: NextRequest) {
     try {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate file type
+        // Validate file type (allow any image)
         if (!file.type.startsWith("image/")) {
             return NextResponse.json(
                 { success: false, error: "Only image files are allowed" },
@@ -32,32 +32,29 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
+        // Validate file size (150KB max)
+        const MAX_SIZE = 150 * 1024; // 150KB
+        if (file.size > MAX_SIZE) {
             return NextResponse.json(
-                { success: false, error: "File size must be less than 5MB" },
+                { success: false, error: "File size must be less than 150KB" },
                 { status: 400 }
             );
         }
 
+        await dbConnect();
+
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Create unique filename
-        const timestamp = Date.now();
-        const ext = path.extname(file.name);
-        const filename = `${timestamp}${ext}`;
+        // Create image in MongoDB
+        const image = await Image.create({
+            data: buffer,
+            contentType: file.type,
+            filename: file.name,
+        });
 
-        // Ensure uploads directory exists
-        const uploadsDir = path.join(process.cwd(), "public", "uploads");
-        await mkdir(uploadsDir, { recursive: true });
-
-        // Write file
-        const filepath = path.join(uploadsDir, filename);
-        await writeFile(filepath, buffer);
-
-        // Return public URL
-        const url = `/uploads/${filename}`;
+        // Return API URL
+        const url = `/api/images/${image._id}`;
 
         return NextResponse.json({
             success: true,
@@ -67,7 +64,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error("Error uploading file:", error);
         return NextResponse.json(
-            { success: false, error: "Failed to upload file" },
+            { success: false, error: error instanceof Error ? error.message : "Failed to upload file" },
             { status: 500 }
         );
     }
