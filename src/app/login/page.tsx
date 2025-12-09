@@ -23,6 +23,7 @@ function LoginForm() {
         setError("");
         setLoading(true);
 
+
         try {
             const result = await signIn("credentials", {
                 email,
@@ -30,15 +31,18 @@ function LoginForm() {
                 redirect: false,
             });
 
+
+
             if (result?.error) {
+
                 setError("Invalid email or password");
+                setLoading(false);
             } else {
-                router.push(callbackUrl);
-                router.refresh();
+
+                window.location.href = callbackUrl;
             }
         } catch {
             setError("An error occurred. Please try again.");
-        } finally {
             setLoading(false);
         }
     };
