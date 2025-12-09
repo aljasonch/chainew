@@ -1,5 +1,7 @@
 import dbConnect from "@/lib/db";
 import Revision from "@/models/Revision";
+import "@/models/User";
+import "@/models/Article";
 import { formatDate } from "@/lib/utils";
 
 async function getRevisions() {

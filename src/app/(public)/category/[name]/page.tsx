@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
+import "@/models/User";
 import { ArticleCard } from "@/components/ArticleCard";
 
 interface PageProps {

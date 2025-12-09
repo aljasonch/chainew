@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
+import "@/models/User";
 
 export async function GET(
     _request: NextRequest,

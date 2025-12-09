@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
+import "@/models/User";
 import { Badge } from "@/components/ui/Badge";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { formatDate, getBaseUrl } from "@/lib/utils";
