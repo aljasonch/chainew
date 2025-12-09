@@ -20,7 +20,7 @@ export function Footer() {
                             Chainew
                         </Link>
                         <p className="mt-4 text-sm max-w-md" style={{ color: 'var(--color-muted)' }}>
-                            Your trusted source for the latest tech news and updates. Stay
+                            Your trusted source for the latest news and updates. Stay
                             informed with comprehensive coverage of AI, software development,
                             cybersecurity, and emerging technologies.
                         </p>
