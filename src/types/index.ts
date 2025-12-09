@@ -44,6 +44,7 @@ export interface IArticle {
     sources: IArticleSource[];
     seo: IArticleSeo;
     publishedAt?: Date;
+    views?: number;
     createdAt: Date;
     updatedAt: Date;
 }

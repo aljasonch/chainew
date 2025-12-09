@@ -7,7 +7,9 @@ import "@/models/User";
 import { Badge } from "@/components/ui/Badge";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { formatDate, getBaseUrl } from "@/lib/utils";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye } from "lucide-react";
+import { headers } from "next/headers";
+import View from "@/models/View";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -24,6 +26,21 @@ async function getArticle(slug: string) {
         .lean();
 
     return article;
+}
+
+async function trackArticleView(articleId: string) {
+    try {
+        const headersList = await headers();
+        const ip = headersList.get("x-forwarded-for") || "unknown";
+        const finalIp = ip.split(",")[0].trim();
+
+        await View.create({ articleId, ip: finalIp });
+
+        await Article.findByIdAndUpdate(articleId, { $inc: { views: 1 } });
+        return true;
+    } catch (error) {
+        return false;
+    }
 }
 
 export async function generateMetadata({
@@ -73,6 +90,17 @@ export async function generateMetadata({
 export default async function ArticlePage({ params }: PageProps) {
     const { slug } = await params;
     const article = await getArticle(slug);
+
+    if (article) {
+        const incremented = await trackArticleView(article._id.toString());
+        if (incremented) {
+            if (typeof article.views === 'number') {
+                article.views++;
+            } else {
+                article.views = 1;
+            }
+        }
+    }
 
     if (!article) {
         notFound();
@@ -146,6 +174,10 @@ export default async function ArticlePage({ params }: PageProps) {
                                 {formatDate(article.publishedAt)}
                             </span>
                         )}
+                        <div className="flex items-center gap-1 text-zinc-500">
+                            <Eye size={16} />
+                            <span className="text-sm">{article.views || 0}</span>
+                        </div>
                     </div>
 
                     <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-3">
