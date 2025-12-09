@@ -18,7 +18,7 @@ const categoryMapping: Record<string, string> = {
 async function getArticlesByCategory(slug: string) {
     await dbConnect();
 
-    const categoryName = categoryMapping[slug.toLowerCase()] || slug;
+    const categoryName = categoryMapping[slug.toLowerCase()] || decodeURIComponent(slug);
 
     const articles = await Article.find({
         status: "published",
