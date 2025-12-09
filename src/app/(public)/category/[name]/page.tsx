@@ -8,43 +8,51 @@ interface PageProps {
     params: Promise<{ name: string }>;
 }
 
-async function getArticlesByCategory(category: string) {
+const categoryMapping: Record<string, string> = {
+    "ai-ml": "AI & ML",
+    "finance": "Finance",
+    "blockchain": "Blockchain",
+    "public-affairs": "Public Affairs",
+};
+
+async function getArticlesByCategory(slug: string) {
     await dbConnect();
+
+    const categoryName = categoryMapping[slug.toLowerCase()] || decodeURIComponent(slug);
 
     const articles = await Article.find({
         status: "published",
-        category: { $regex: new RegExp(`^${category}$`, "i") },
+        category: { $regex: new RegExp(`^${categoryName}$`, "i") },
     })
         .populate("authorId", "name")
         .sort({ publishedAt: -1 })
         .limit(50)
         .lean();
 
-    return articles;
+    return { articles, categoryName };
 }
 
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
     const { name } = await params;
-    const decodedName = decodeURIComponent(name);
+    const categoryName = categoryMapping[name.toLowerCase()] || decodeURIComponent(name);
 
     return {
-        title: `${decodedName} News`,
-        description: `Latest news and updates in ${decodedName}`,
+        title: `${categoryName} News`,
+        description: `Latest news and updates in ${categoryName}`,
     };
 }
 
 export default async function CategoryPage({ params }: PageProps) {
     const { name } = await params;
-    const decodedName = decodeURIComponent(name);
-    const articles = await getArticlesByCategory(decodedName);
+    const { articles, categoryName } = await getArticlesByCategory(name);
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
             <header className="mb-8">
                 <h1 className="text-3xl font-bold text-zinc-900 mb-2">
-                    {decodedName}
+                    {categoryName}
                 </h1>
                 <p className="text-zinc-500">
                     {articles.length} article{articles.length !== 1 ? "s" : ""} in this
