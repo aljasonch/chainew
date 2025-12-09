@@ -27,11 +27,11 @@ export default async function TrendingPage() {
                     <div className="flex items-center gap-3 mb-4">
                         <TrendingUp className="text-muted" size={32} />
                         <h1 className="text-4xl md:text-5xl font-black text-inverse animate-fadeInUp" style={{ animationFillMode: 'forwards' }}>
-                            Trending in Tech
+                            Trending
                         </h1>
                     </div>
                     <p className="text-muted text-lg animate-fadeInUp stagger-1" style={{ animationFillMode: 'forwards' }}>
-                        The most popular tech stories developers can&apos;t stop talking about
+                        The most popular stories people can&apos;t stop talking about
                     </p>
                 </div>
             </section>
