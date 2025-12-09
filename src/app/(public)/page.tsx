@@ -5,6 +5,8 @@ import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
 import "@/models/User";
 
+export const dynamic = "force-dynamic";
+
 const categoryIcons: Record<string, React.ElementType> = {
   "AI & ML": Cpu,
   "Finance": DollarSign,
