@@ -20,7 +20,7 @@ export async function GET(
             );
         }
 
-        return new NextResponse(image.data as Buffer as BodyInit, {
+        return new NextResponse(Buffer.from(image.data), {
             headers: {
                 "Content-Type": image.contentType,
                 "Cache-Control": "public, max-age=31536000, immutable",
