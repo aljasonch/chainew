@@ -24,14 +24,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate file type (allow any image)
-        if (!file.type.startsWith("image/")) {
-            return NextResponse.json(
-                { success: false, error: "Only image files are allowed" },
-                { status: 400 }
-            );
-        }
-
         // Validate file size (150KB max)
         const MAX_SIZE = 150 * 1024; // 150KB
         if (file.size > MAX_SIZE) {
@@ -41,10 +33,30 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        await dbConnect();
-
+        // Read file buffer first for magic bytes validation
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
+
+        // Validate file type using magic bytes (file signatures)
+        // This prevents MIME type spoofing attacks
+        const isPNG = buffer.length >= 4 && 
+            buffer[0] === 0x89 && buffer[1] === 0x50 && 
+            buffer[2] === 0x4E && buffer[3] === 0x47;
+        const isJPEG = buffer.length >= 3 && 
+            buffer[0] === 0xFF && buffer[1] === 0xD8 && 
+            buffer[2] === 0xFF;
+        const isWebP = buffer.length >= 12 && 
+            buffer[8] === 0x57 && buffer[9] === 0x45 && 
+            buffer[10] === 0x42 && buffer[11] === 0x50;
+
+        if (!isPNG && !isJPEG && !isWebP) {
+            return NextResponse.json(
+                { success: false, error: "Only image files (PNG, JPEG, WebP) are allowed" },
+                { status: 400 }
+            );
+        }
+
+        await dbConnect();
 
         // Create image in MongoDB
         const image = await Image.create({
