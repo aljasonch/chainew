@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         const image = await Image.create({
             data: buffer,
             contentType: file.type,
-            filename: file.name,
+            filename: file.name.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 255),
         });
 
         // Return API URL
