@@ -30,25 +30,20 @@ async function getArticle(slug: string) {
 
 async function trackArticleView(articleId: string): Promise<number | null> {
     try {
-        // Ensure database connection
         await dbConnect();
 
-        // Get IP address with fallback to x-real-ip header
         const headersList = await headers();
         let ip = headersList.get("x-forwarded-for");
         if (!ip) {
             ip = headersList.get("x-real-ip");
         }
         if (!ip) {
-            // Skip tracking if IP is unknown to avoid all unknown users sharing the same view entry
             return null;
         }
         const finalIp = ip.split(",")[0].trim();
 
-        // Create view record (will fail with duplicate key error if already exists)
         await View.create({ articleId, ip: finalIp });
 
-        // Atomically increment the view count and return the updated document
         const updatedArticle = await Article.findByIdAndUpdate(
             articleId,
             { $inc: { views: 1 } },
@@ -57,14 +52,11 @@ async function trackArticleView(articleId: string): Promise<number | null> {
         
         return updatedArticle?.views ?? null;
     } catch (error: unknown) {
-        // Duplicate key error (MongoDB error code 11000) is expected if the view already exists
         if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-            // Expected: view already tracked for this articleId/ip, return current count
             await dbConnect();
             const currentArticle = await Article.findById(articleId).select('views');
             return currentArticle?.views ?? null;
         }
-        // Unexpected error: log for debugging
         console.error("Error tracking article view:", error);
         return null;
     }

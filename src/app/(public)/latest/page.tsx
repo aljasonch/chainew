@@ -1,25 +1,65 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
-import { Clock, ArrowRight, Newspaper } from "lucide-react";
+import { Pagination } from "@/components/ui/Pagination";
+import { Clock, ArrowRight, Newspaper, ArrowUpRight } from "lucide-react";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
 import "@/models/User";
 import { formatDateShort } from "@/lib/utils";
 
-async function getLatestArticles() {
-    await dbConnect();
+const ITEMS_PER_PAGE = 10;
 
-    const articles = await Article.find({ status: "published" })
-        .populate("authorId", "name")
-        .sort({ publishedAt: -1 })
-        .limit(20)
-        .lean();
-
-    return JSON.parse(JSON.stringify(articles));
+interface ArticleType {
+    _id: string;
+    slug: string;
+    category: string;
+    publishedAt?: string;
+    title: string;
+    summary: string;
+    authorId?: { name?: string };
+    seo?: { ogImageUrl?: string };
 }
 
-export default async function LatestPage() {
-    const articles = await getLatestArticles();
+async function getLatestArticles(page: number) {
+    await dbConnect();
+
+    const skip = (page - 1) * ITEMS_PER_PAGE;
+
+    const [articles, total] = await Promise.all([
+        Article.find({ status: "published" })
+            .populate("authorId", "name")
+            .sort({ publishedAt: -1 })
+            .skip(skip)
+            .limit(ITEMS_PER_PAGE)
+            .lean(),
+        Article.countDocuments({ status: "published" })
+    ]);
+
+    return {
+        articles: JSON.parse(JSON.stringify(articles)),
+        total,
+        totalPages: Math.max(1, Math.ceil(total / ITEMS_PER_PAGE))
+    };
+}
+
+interface LatestPageProps {
+    searchParams: Promise<{ page?: string }>;
+}
+
+export default async function LatestPage({ searchParams }: LatestPageProps) {
+    const params = await searchParams;
+    const currentPage = Math.max(1, parseInt(params.page || "1") || 1);
+    const { articles, totalPages } = await getLatestArticles(currentPage);
+
+    let featuredArticle: ArticleType | undefined;
+    let remainingArticles: ArticleType[];
+    if (currentPage === 1 && articles.length > 1) {
+        featuredArticle = articles[0];
+        remainingArticles = articles.slice(1);
+    } else {
+        featuredArticle = undefined;
+        remainingArticles = articles;
+    }
 
     return (
         <div className="min-h-screen" style={{ background: 'var(--color-bg-primary)' }}>
@@ -34,7 +74,7 @@ export default async function LatestPage() {
                 </div>
             </section>
 
-            <section className="max-w-4xl mx-auto px-4 py-12">
+            <section className="max-w-5xl mx-auto px-4 py-12">
                 {articles.length === 0 ? (
                     <div className="text-center py-16">
                         <Newspaper className="mx-auto text-secondary mb-4" size={48} />
@@ -42,46 +82,99 @@ export default async function LatestPage() {
                         <p className="text-secondary">Check back soon for the latest news.</p>
                     </div>
                 ) : (
-                    <div className="space-y-6">
-                        {articles.map((article: { _id: string; slug: string; category: string; publishedAt?: string; title: string; summary: string; authorId?: { name?: string } }, index: number) => (
+                    <>
+                        {featuredArticle && currentPage === 1 && (
                             <Link
-                                key={article._id}
-                                href={`/article/${article.slug}`}
-                                className="block bg-card border border-default rounded-xl p-6 hover-lift transition-all duration-200 animate-fadeInUp"
-                                style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
+                                href={`/article/${featuredArticle.slug}`}
+                                className="group block mb-10 animate-fadeInUp"
+                                style={{ animationFillMode: 'forwards' }}
                             >
-                                <div className="flex flex-col md:flex-row md:items-start gap-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <Badge variant="accent">{article.category}</Badge>
-                                            {article.publishedAt && (
-                                                <span className="text-sm text-secondary flex items-center gap-1">
+                                <div className="relative overflow-hidden rounded-2xl bg-primary p-8 md:p-12 hover-lift transition-all duration-300">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent opacity-90" />
+
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <Badge variant="secondary">{featuredArticle.category}</Badge>
+                                            {featuredArticle.publishedAt && (
+                                                <span className="text-sm text-muted flex items-center gap-1">
                                                     <Clock size={14} />
-                                                    {formatDateShort(article.publishedAt)}
+                                                    {formatDateShort(featuredArticle.publishedAt)}
                                                 </span>
                                             )}
+                                            <span className="px-3 py-1 bg-accent/20 text-accent text-xs font-semibold rounded-full uppercase tracking-wide">
+                                                Latest
+                                            </span>
                                         </div>
 
-                                        <h2 className="text-xl font-bold text-primary hover:text-secondary transition-colors mb-2">
-                                            {article.title}
+                                        <h2 className="text-3xl md:text-4xl font-black text-inverse mb-4 group-hover:text-muted transition-colors">
+                                            {featuredArticle.title}
                                         </h2>
 
-                                        <p className="text-secondary line-clamp-2 mb-3">
-                                            {article.summary}
+                                        <p className="text-muted text-lg mb-6 line-clamp-3 max-w-3xl">
+                                            {featuredArticle.summary}
                                         </p>
 
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-secondary">
-                                                By <span className="text-primary font-medium">{article.authorId?.name || 'Chainew'}</span>
+                                            <span className="text-sm text-muted">
+                                                By <span className="text-inverse font-medium">{featuredArticle.authorId?.name || 'Chainew'}</span>
+                                            </span>
+                                            <span className="flex items-center gap-2 text-accent group-hover:translate-x-1 transition-transform">
+                                                Read Full Story
+                                                <ArrowUpRight size={20} />
                                             </span>
                                         </div>
                                     </div>
-
-                                    <ArrowRight className="hidden md:block text-secondary shrink-0" size={24} />
                                 </div>
                             </Link>
-                        ))}
-                    </div>
+                        )}
+
+                        <div className="space-y-6">
+                            {(currentPage === 1 ? remainingArticles : articles).map((article: ArticleType, index: number) => (
+                                <Link
+                                    key={article._id}
+                                    href={`/article/${article.slug}`}
+                                    className="block bg-card border border-default rounded-xl p-6 hover-lift transition-all duration-200 animate-fadeInUp"
+                                    style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
+                                >
+                                    <div className="flex flex-col md:flex-row md:items-start gap-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <Badge variant="accent">{article.category}</Badge>
+                                                {article.publishedAt && (
+                                                    <span className="text-sm text-secondary flex items-center gap-1">
+                                                        <Clock size={14} />
+                                                        {formatDateShort(article.publishedAt)}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <h2 className="text-xl font-bold text-primary hover:text-secondary transition-colors mb-2">
+                                                {article.title}
+                                            </h2>
+
+                                            <p className="text-secondary line-clamp-2 mb-3">
+                                                {article.summary}
+                                            </p>
+
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-secondary">
+                                                    By <span className="text-primary font-medium">{article.authorId?.name || 'Chainew'}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <ArrowRight className="hidden md:block text-secondary shrink-0" size={24} />
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            basePath="/latest"
+                        />
+                    </>
                 )}
             </section>
         </div>
