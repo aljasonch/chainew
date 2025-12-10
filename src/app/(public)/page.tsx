@@ -33,7 +33,6 @@ async function getHomePageData() {
     Article.find({ status: "published" })
       .populate("authorId", "name")
       .sort({ publishedAt: -1 })
-      .skip(4)
       .limit(4)
       .lean(),
     Article.aggregate([
@@ -111,13 +110,13 @@ export default async function HomePage() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold text-primary mb-6">Explore Topics</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <h2 className="text-2xl font-bold text-primary mb-6 text-center">Explore Topics</h2>
+        <div className="flex flex-wrap justify-center gap-3">
           {categories.map((cat, index) => (
             <Link
               key={cat.name}
               href={`/category/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
-              className="group flex flex-col items-center p-4 rounded-xl transition-all duration-200 hover-lift animate-fadeInUp"
+              className="group flex flex-col items-center p-4 rounded-xl transition-all duration-200 hover-lift animate-fadeInUp w-[140px] shrink-0"
               style={{
                 animationDelay: `${index * 0.05}s`,
                 animationFillMode: 'forwards',
@@ -136,28 +135,27 @@ export default async function HomePage() {
       {featuredArticles.length > 1 && (
         <section className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[200px]">
-            {/* Large Card */}
             {featuredArticles[0] && (
               <Link
                 href={`/article/${featuredArticles[0].slug}`}
-                className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-3xl bg-primary p-8 flex flex-col justify-end hover-lift animate-fadeInUp"
+                className="md:col-span-2 row-span-2 relative group overflow-hidden rounded-3xl bg-primary p-6 md:p-8 flex flex-col justify-end hover-lift animate-fadeInUp"
                 style={{ animationFillMode: 'forwards' }}
               >
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 z-30">
                   <Badge variant="secondary">{featuredArticles[0].category}</Badge>
                 </div>
                 {(() => {
                   const Icon = categoryIcons[featuredArticles[0].category] || Newspaper;
                   return <Icon className="absolute top-8 left-8 text-accent opacity-20" size={120} />;
                 })()}
-                <div className="absolute inset-0 bg-[linear-gradient(to_top,var(--color-primary)_0%,transparent_100%)] z-10 opacity-95" />
-                <div className="relative z-20">
-                  <h2 className="text-3xl md:text-4xl font-bold text-inverse mb-2">
+                <div className="absolute inset-0 bg-[linear-gradient(to_top,var(--color-primary)_10%,transparent_100%)] z-10 opacity-95" />
+                <div className="relative z-20 mt-auto pt-16">
+                  <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-inverse mb-2 line-clamp-3">
                     {featuredArticles[0].title}
                   </h2>
-                  <p className="text-muted line-clamp-2">{featuredArticles[0].summary}</p>
+                  <p className="text-muted line-clamp-2 text-sm md:text-base">{featuredArticles[0].summary}</p>
                 </div>
-                <ArrowUpRight className="absolute bottom-8 right-8 text-accent opacity-0 group-hover:opacity-100 transition-opacity z-20" size={32} />
+                <ArrowUpRight className="absolute bottom-6 right-6 text-accent opacity-0 group-hover:opacity-100 transition-opacity z-20" size={32} />
               </Link>
             )}
 
@@ -194,7 +192,7 @@ export default async function HomePage() {
                 <Sparkles className="text-muted" size={20} />
                 Latest Articles
               </h2>
-              <Link href="/latest" className="text-accent text-sm hover:text-muted transition-colors">
+              <Link href="/latest" className="text-inverse text-sm hover:text-muted transition-colors">
                 View All
               </Link>
             </div>
@@ -219,34 +217,61 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="grid md:grid-cols-2">
-        <div className="bg-muted p-12 md:p-16 flex flex-col justify-center">
-          <h2 className="text-3xl md:text-4xl font-black text-primary mb-4">
-            Never Miss<br />a Story
-          </h2>
-          <p className="text-secondary mb-6 max-w-md">
-            Get the latest news delivered to your inbox. No spam, just quality content.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="px-5 py-3 rounded-full border-2 border-[var(--color-accent)]/30 bg-card focus:border-[var(--color-primary)] focus:outline-none flex-1"
-            />
-            <button className="px-6 py-3 bg-primary text-inverse rounded-full font-semibold hover:bg-secondary transition-colors">
-              Subscribe
-            </button>
-          </div>
-        </div>
-        <div className="bg-primary p-12 md:p-16 flex flex-col justify-center">
-          <div className="grid grid-cols-2 gap-8">
-            <div>
-              <p className="text-5xl font-black text-accent">{featuredArticles.length + latestArticles.length}+</p>
-              <p className="text-muted mt-1">Articles</p>
+      <section className="py-12 md:py-20 max-w-7xl mx-auto px-4">
+        <div className="relative overflow-hidden rounded-3xl bg-secondary isolate">
+
+          <div className="grid lg:grid-cols-5 gap-12 p-8 md:p-16 relative z-10">
+            <div className="lg:col-span-3 flex flex-col justify-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary border border-primary w-fit mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                <span className="text-xs font-medium text-inverse uppercase tracking-wider">Weekly Newsletter</span>
+              </div>
+
+              <h2 className="text-3xl md:text-5xl font-black text-inverse mb-6 leading-tight">
+                Stay Ahead of the <br />
+                <span className="text-accent">Tech Curve</span>
+              </h2>
+
+              <p className="text-inverse text-lg mb-8 max-w-md leading-relaxed opacity-90">
+                Join our community of forward-thinkers. Get curated news, deep dives, and trends delivered weekly.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 max-w-md">
+                <input
+                  type="email"
+                  placeholder="name@example.com"
+                  className="px-6 py-4 rounded-xl bg-primary border border-primary text-inverse placeholder:text-muted focus:border-accent focus:outline-none flex-1 transition-all"
+                />
+                <button className="px-8 py-4 bg-accent text-inverse rounded-xl font-bold hover:bg-white hover:text-secondary transition-all shadow-lg">
+                  Join Now
+                </button>
+              </div>
+              <p className="mt-4 text-xs text-muted">
+                No spam, unsubscribe at any time.
+              </p>
             </div>
-            <div>
-              <p className="text-5xl font-black text-inverse">{categories.length}</p>
-              <p className="text-muted mt-1">Categories</p>
+
+            <div className="lg:col-span-2 flex flex-col justify-center lg:border-l lg:border-primary lg:pl-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-8">
+                <div className="group p-6 rounded-2xl bg-primary hover:bg-primary/80 transition-colors border border-primary">
+                  <div className="text-5xl font-black text-inverse mb-2 group-hover:scale-110 transition-transform origin-left duration-300">
+                    {featuredArticles.length + latestArticles.length}+
+                  </div>
+                  <div className="text-muted font-medium">Published Articles</div>
+                  <div className="w-12 h-1 bg-accent rounded-full mt-4 group-hover:w-full transition-all duration-500"></div>
+                </div>
+
+                <div className="group p-6 rounded-2xl bg-primary hover:bg-primary/80 transition-colors border border-primary">
+                  <div className="text-5xl font-black text-inverse mb-2 group-hover:scale-110 transition-transform origin-left duration-300">
+                    {categories.length}
+                  </div>
+                  <div className="text-muted font-medium">Active Categories</div>
+                  <div className="w-12 h-1 bg-secondary rounded-full mt-4 group-hover:w-full transition-all duration-500"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
