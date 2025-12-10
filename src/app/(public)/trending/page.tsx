@@ -36,7 +36,7 @@ async function getTrendingArticles(page: number) {
     return {
         articles: JSON.parse(JSON.stringify(articles)),
         total,
-        totalPages: Math.ceil(total / ITEMS_PER_PAGE)
+        totalPages: Math.max(1, Math.ceil(total / ITEMS_PER_PAGE))
     };
 }
 
@@ -46,11 +46,18 @@ interface TrendingPageProps {
 
 export default async function TrendingPage({ searchParams }: TrendingPageProps) {
     const params = await searchParams;
-    const currentPage = Math.max(1, parseInt(params.page || "1"));
+    const currentPage = Math.max(1, parseInt(params.page || "1") || 1);
     const { articles, totalPages } = await getTrendingArticles(currentPage);
 
-    const featuredArticle = articles[0] as ArticleType | undefined;
-    const remainingArticles = articles.slice(1) as ArticleType[];
+    let featuredArticle: ArticleType | undefined;
+    let remainingArticles: ArticleType[];
+    if (currentPage === 1 && articles.length > 1) {
+        featuredArticle = articles[0];
+        remainingArticles = articles.slice(1);
+    } else {
+        featuredArticle = undefined;
+        remainingArticles = articles;
+    }
     const startRank = (currentPage - 1) * ITEMS_PER_PAGE;
 
     return (

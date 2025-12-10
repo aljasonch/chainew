@@ -10,6 +10,8 @@ interface PaginationProps {
 export function Pagination({ currentPage, totalPages, basePath }: PaginationProps) {
     if (totalPages <= 1) return null;
 
+    const buildPageUrl = (page: number) => `${basePath}?page=${page}`;
+
     const getPageNumbers = () => {
         const pages: (number | string)[] = [];
         const showEllipsisStart = currentPage > 3;
@@ -30,9 +32,7 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
             const end = Math.min(totalPages - 1, currentPage + 1);
 
             for (let i = start; i <= end; i++) {
-                if (!pages.includes(i)) {
-                    pages.push(i);
-                }
+                pages.push(i);
             }
 
             if (showEllipsisEnd) {
@@ -53,8 +53,9 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
         <nav className="flex items-center justify-center gap-2 mt-12" aria-label="Pagination">
             {currentPage > 1 ? (
                 <Link
-                    href={`${basePath}?page=${currentPage - 1}`}
+                    href={buildPageUrl(currentPage - 1)}
                     className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-card border border-default text-primary hover:bg-muted transition-colors"
+                    aria-label="Go to previous page"
                 >
                     <ChevronLeft size={16} />
                     Previous
@@ -78,12 +79,14 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
                     ) : (
                         <Link
                             key={page}
-                            href={`${basePath}?page=${page}`}
+                            href={buildPageUrl(page as number)}
                             className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                                 currentPage === page
                                     ? "bg-primary text-inverse"
                                     : "bg-card border border-default text-primary hover:bg-muted"
                             }`}
+                            aria-label={`Go to page ${page}`}
+                            {...(currentPage === page ? { 'aria-current': 'page' as const } : {})}
                         >
                             {page}
                         </Link>
@@ -93,8 +96,9 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
 
             {currentPage < totalPages ? (
                 <Link
-                    href={`${basePath}?page=${currentPage + 1}`}
+                    href={buildPageUrl(currentPage + 1)}
                     className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-card border border-default text-primary hover:bg-muted transition-colors"
+                    aria-label="Go to next page"
                 >
                     Next
                     <ChevronRight size={16} />
