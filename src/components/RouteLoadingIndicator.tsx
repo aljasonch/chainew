@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const MIN_VISIBLE_MS = 250;
 const MAX_VISIBLE_MS = 15000;
@@ -48,13 +48,14 @@ function isInternalNavigatingAnchor(anchor: HTMLAnchorElement): boolean {
 export function RouteLoadingIndicator() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchParamsString = searchParams?.toString();
 
   const [active, setActive] = useState(false);
   const startTimeRef = useRef<number | null>(null);
   const hideTimeoutRef = useRef<number | null>(null);
   const maxTimeoutRef = useRef<number | null>(null);
 
-  const clearTimers = () => {
+  const clearTimers = useCallback(() => {
     if (hideTimeoutRef.current != null) {
       window.clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
@@ -63,23 +64,25 @@ export function RouteLoadingIndicator() {
       window.clearTimeout(maxTimeoutRef.current);
       maxTimeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const show = () => {
+  const show = useCallback(() => {
     clearTimers();
 
-    if (!active) {
-      startTimeRef.current = Date.now();
-      setActive(true);
-    }
+    setActive((currentActive) => {
+      if (!currentActive) {
+        startTimeRef.current = Date.now();
+      }
+      return true;
+    });
 
     maxTimeoutRef.current = window.setTimeout(() => {
       startTimeRef.current = null;
       setActive(false);
     }, MAX_VISIBLE_MS);
-  };
+  }, [clearTimers]);
 
-  const hide = () => {
+  const hide = useCallback(() => {
     clearTimers();
 
     const start = startTimeRef.current;
@@ -101,7 +104,7 @@ export function RouteLoadingIndicator() {
       startTimeRef.current = null;
       setActive(false);
     }, remaining);
-  };
+  }, [clearTimers]);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -129,14 +132,13 @@ export function RouteLoadingIndicator() {
       window.removeEventListener('popstate', onPopState);
       clearTimers();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+  }, [show, clearTimers]);
 
   useEffect(() => {
     // Route finished (or changed): hide indicator.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     hide();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, searchParams?.toString()]);
+  }, [pathname, searchParamsString, hide]);
 
   if (!active) return null;
 
@@ -144,7 +146,7 @@ export function RouteLoadingIndicator() {
     <div
       className="route-loading-indicator"
       role="status"
-      aria-label="Memuat halaman"
+      aria-label="Loading page"
       aria-live="polite"
     />
   );
