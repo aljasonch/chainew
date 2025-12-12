@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,7 +14,6 @@ const navLinks = [
 ];
 
 export function Header() {
-    const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
 
     return (
@@ -36,9 +34,7 @@ export function Header() {
                                 href={link.href}
                                 className={cn(
                                     "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
-                                    pathname === link.href
-                                        ? "text-primary bg-muted"
-                                        : "text-secondary hover:text-primary hover:bg-muted/50"
+                                    "text-secondary hover:text-primary hover:bg-muted/50"
                                 )}
                                 style={{ animationDelay: `${index * 0.05}s` }}
                             >
@@ -85,9 +81,7 @@ export function Header() {
                                 onClick={() => setMobileOpen(false)}
                                 className={cn(
                                     "block py-2 px-2 text-sm font-medium rounded-md transition-all duration-200",
-                                    pathname === link.href
-                                        ? "text-primary bg-muted"
-                                        : "text-secondary hover:text-primary hover:bg-muted/50"
+                                    "text-secondary hover:text-primary hover:bg-muted/50"
                                 )}
                                 style={{
                                     animationDelay: `${index * 0.05}s`,
