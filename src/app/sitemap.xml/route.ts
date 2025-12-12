@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
 
+export const dynamic = "force-dynamic";
+
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export async function GET() {
