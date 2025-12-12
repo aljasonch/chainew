@@ -193,7 +193,7 @@ export default async function ArticlePage({ params }: PageProps) {
                     <p className="text-zinc-700 font-medium">{article.summary}</p>
                 </div>
 
-                <div className="max-w-none">{content}</div>
+                <div className="prose max-w-none">{content}</div>
 
                 {article.tags && article.tags.length > 0 && (
                     <div className="mt-8 pt-8 border-t border-zinc-200">

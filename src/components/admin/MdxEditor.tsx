@@ -56,7 +56,7 @@ export function MdxEditor({ value, onChange, className }: MdxEditorProps) {
                     className="border-0 rounded-none min-h-[400px] focus:ring-0"
                 />
             ) : (
-                <div className="p-4 min-h-[400px] max-w-none">
+                <div className="p-4 min-h-[400px] max-w-none prose">
                     <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={reactMarkdownComponents}
