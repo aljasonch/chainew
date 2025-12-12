@@ -409,6 +409,43 @@ body {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
+@keyframes routeLoadingBar {
+  0% {
+    transform: translateX(-35%);
+  }
+
+  50% {
+    transform: translateX(40%);
+  }
+
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.route-loading-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 9999;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--color-muted) 55%, transparent);
+  overflow: hidden;
+}
+
+.route-loading-indicator::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 35%;
+  background: var(--color-primary);
+  animation: routeLoadingBar 1.1s ease-in-out infinite;
+}
+
 .stagger-1 {
   animation-delay: 0.05s;
 }
