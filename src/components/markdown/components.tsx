@@ -163,16 +163,14 @@ export const mdxComponents = {
 };
 
 export const reactMarkdownComponents: Components = {
-    h1: ({ className, ...props }) => <MarkdownH1 {...props} className={className} />,
-    h2: ({ className, ...props }) => <MarkdownH2 {...props} className={className} />,
-    h3: ({ className, ...props }) => <MarkdownH3 {...props} className={className} />,
-    p: ({ className, ...props }) => <MarkdownP {...props} className={className} />,
-    a: ({ className, ...props }) => <MarkdownA {...props} className={className} />,
-    img: ({ className, ...props }) => <MarkdownImg {...props} className={className} />,
-    blockquote: ({ className, ...props }) => (
-        <MarkdownBlockquote {...props} className={className} />
-    ),
-    pre: ({ className, ...props }) => <MarkdownPre {...props} className={className} />,
+    h1: MarkdownH1,
+    h2: MarkdownH2,
+    h3: MarkdownH3,
+    p: MarkdownP,
+    a: MarkdownA,
+    img: MarkdownImg,
+    blockquote: MarkdownBlockquote,
+    pre: MarkdownPre,
     code: ({ children, className, ...props }) => {
         const isBlock = typeof className === "string" && className.includes("language-");
         if (!isBlock) return <MarkdownInlineCode>{children}</MarkdownInlineCode>;
@@ -182,12 +180,12 @@ export const reactMarkdownComponents: Components = {
             </code>
         );
     },
-    ul: ({ className, ...props }) => <MarkdownUl {...props} className={className} />,
-    ol: ({ className, ...props }) => <MarkdownOl {...props} className={className} />,
-    li: ({ className, ...props }) => <MarkdownLi {...props} className={className} />,
-    table: ({ className, ...props }) => <MarkdownTable {...props} className={className} />,
-    thead: ({ className, ...props }) => <MarkdownThead {...props} className={className} />,
-    tr: ({ className, ...props }) => <MarkdownTr {...props} className={className} />,
-    th: ({ className, ...props }) => <MarkdownTh {...props} className={className} />,
-    td: ({ className, ...props }) => <MarkdownTd {...props} className={className} />,
+    ul: MarkdownUl,
+    ol: MarkdownOl,
+    li: MarkdownLi,
+    table: MarkdownTable,
+    thead: MarkdownThead,
+    tr: MarkdownTr,
+    th: MarkdownTh,
+    td: MarkdownTd,
 };
