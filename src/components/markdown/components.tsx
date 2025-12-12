@@ -111,7 +111,7 @@ export function MarkdownCallout({
     title,
 }: {
     children: ReactNode;
-    type?: "info" | "warning" | "success" | "error" | string;
+    type?: "info" | "warning" | "success" | "error";
     title?: string;
 }) {
     const variants: Record<string, string> = {
@@ -196,6 +196,7 @@ export const reactMarkdownComponents: Components = {
     p: MarkdownP,
     a: MarkdownA,
     img: MarkdownImg,
+    Callout: MarkdownCallout,
     blockquote: MarkdownBlockquote,
     pre: MarkdownPre,
     code: ({ children, className, ...props }) => {
