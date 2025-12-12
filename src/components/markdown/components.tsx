@@ -105,6 +105,32 @@ export function MarkdownInlineCode({ children }: { children: ReactNode }) {
     return <code className="bg-zinc-100 px-1 rounded">{children}</code>;
 }
 
+export function MarkdownCallout({
+    children,
+    type = "info",
+    title,
+}: {
+    children: ReactNode;
+    type?: "info" | "warning" | "success" | "error" | string;
+    title?: string;
+}) {
+    const variants: Record<string, string> = {
+        info: "border-blue-200 bg-blue-50 text-blue-900",
+        warning: "border-amber-200 bg-amber-50 text-amber-900",
+        success: "border-emerald-200 bg-emerald-50 text-emerald-900",
+        error: "border-red-200 bg-red-50 text-red-900",
+    };
+
+    const variantClass = variants[type] ?? variants.info;
+
+    return (
+        <div className={cx("my-4 rounded-lg border px-4 py-3", variantClass)}>
+            {title && <p className="font-semibold mb-1">{title}</p>}
+            <div className="text-sm">{children}</div>
+        </div>
+    );
+}
+
 export function MarkdownH1(props: ComponentPropsWithoutRef<"h1">) {
     const { className, ...rest } = props;
     return <h1 {...rest} className={cx("text-2xl font-bold mt-6 mb-4", className)} />;
@@ -147,6 +173,7 @@ export const mdxComponents = {
     p: MarkdownP,
     a: MarkdownA,
     img: MarkdownImg,
+    Callout: MarkdownCallout,
     blockquote: MarkdownBlockquote,
     pre: MarkdownPre,
     code: (props: ComponentPropsWithoutRef<"code">) => (
