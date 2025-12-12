@@ -409,20 +409,6 @@ body {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-@keyframes routeLoadingBar {
-  0% {
-    transform: translateX(-35%);
-  }
-
-  50% {
-    transform: translateX(40%);
-  }
-
-  100% {
-    transform: translateX(120%);
-  }
-}
-
 .route-loading-indicator {
   position: fixed;
   top: 0;
@@ -435,15 +421,16 @@ body {
   overflow: hidden;
 }
 
-.route-loading-indicator::before {
-  content: "";
+.route-loading-indicator__bar {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
   height: 100%;
-  width: 35%;
   background: var(--color-primary);
-  animation: routeLoadingBar 1.1s ease-in-out infinite;
+  transform-origin: left;
+  transition: transform 220ms ease-out;
+  will-change: transform;
 }
 
 .stagger-1 {
