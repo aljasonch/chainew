@@ -5,9 +5,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const MIN_VISIBLE_MS = 250;
 const MAX_VISIBLE_MS = 15000;
-const FINISH_ANIMATION_MS = 200;
-const PROGRESS_CAP = 0.9;
-const PROGRESS_TICK_MS = 120;
+const FINISH_ANIMATION_MS = 400;
+const PROGRESS_CAP = 0.98;
+const PROGRESS_TICK_MS = 90;
 
 function isModifiedClick(event: MouseEvent) {
   return event.metaKey || event.altKey || event.ctrlKey || event.shiftKey;
@@ -119,7 +119,7 @@ export function RouteLoadingIndicator() {
     setActive((currentActive) => {
       if (!currentActive) {
         startTimeRef.current = Date.now();
-        setProgress(0.12);
+        setProgress(0.15);
       }
       return true;
     });
