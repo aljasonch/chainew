@@ -53,6 +53,8 @@ export default function ArticleEditorPage({
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
     const [tagInput, setTagInput] = useState("");
+    const [importJson, setImportJson] = useState("");
+    const [importError, setImportError] = useState<string | null>(null);
     const [form, setForm] = useState<ArticleFormData>({
         title: "",
         subtitle: "",
@@ -69,6 +71,143 @@ export default function ArticleEditorPage({
             ogImageUrl: "",
         },
     });
+
+    const isRecord = (value: unknown): value is Record<string, unknown> => {
+        return typeof value === "object" && value !== null && !Array.isArray(value);
+    };
+
+    const applyImportedArticle = (raw: unknown) => {
+        const candidate = Array.isArray(raw)
+            ? raw[0]
+            : isRecord(raw) && "article" in raw
+                ? raw["article"]
+                : raw;
+
+        if (!isRecord(candidate)) {
+            throw new Error("JSON must be an object (or array of objects)");
+        }
+
+        const article = candidate;
+
+        const title = typeof article["title"] === "string" ? article["title"] : "";
+        const subtitle =
+            typeof article["subtitle"] === "string" ? article["subtitle"] : "";
+        const summary =
+            typeof article["summary"] === "string" ? article["summary"] : "";
+
+        const content_mdx =
+            typeof article["content_mdx"] === "string"
+                ? article["content_mdx"]
+                : typeof article["mdx"] === "string"
+                    ? article["mdx"]
+                    : typeof article["content"] === "string"
+                        ? article["content"]
+                        : "";
+
+        const nextSlug =
+            typeof article["slug"] === "string" && article["slug"].trim()
+                ? article["slug"]
+                : title
+                    ? slugify(title)
+                    : "";
+
+        const nextCategory =
+            typeof article["category"] === "string" && article["category"].trim()
+                ? article["category"]
+                : categories[0];
+
+        const nextTags = Array.isArray(article["tags"])
+            ? (article["tags"].filter((t) => typeof t === "string") as string[])
+            : typeof article["tags"] === "string"
+                ? article["tags"]
+                    .split(",")
+                    .map((t) => t.trim())
+                    .filter(Boolean)
+                : [];
+
+        const nextStatus =
+            article["status"] === "draft" ||
+                article["status"] === "review" ||
+                article["status"] === "published"
+                ? (article["status"] as ArticleFormData["status"])
+                : "draft";
+
+        const nextSources = Array.isArray(article["sources"])
+            ? (article["sources"]
+                .filter((s) => isRecord(s))
+                .map((s) => ({
+                    name: typeof s["name"] === "string" ? s["name"] : "",
+                    url: typeof s["url"] === "string" ? s["url"] : "",
+                })) as ArticleSource[])
+            : [];
+
+        const incomingSeo =
+            isRecord(article["seo"])
+                ? article["seo"]
+                : {};
+
+        const metaTitle =
+            typeof incomingSeo["metaTitle"] === "string" &&
+                incomingSeo["metaTitle"].trim()
+                ? incomingSeo["metaTitle"]
+                : title;
+
+        const metaDescription =
+            typeof incomingSeo["metaDescription"] === "string" &&
+                incomingSeo["metaDescription"].trim()
+                ? incomingSeo["metaDescription"]
+                : summary;
+
+        const ogImageUrl =
+            typeof incomingSeo["ogImageUrl"] === "string"
+                ? incomingSeo["ogImageUrl"]
+                : "";
+
+        setForm((prev) => ({
+            ...prev,
+            title: title || prev.title,
+            subtitle: subtitle || prev.subtitle,
+            slug: isNew
+                ? nextSlug || prev.slug
+                : typeof article["slug"] === "string"
+                    ? article["slug"]
+                    : prev.slug,
+            summary: summary || prev.summary,
+            category: categories.includes(nextCategory) ? nextCategory : prev.category,
+            tags: nextTags.length ? nextTags : prev.tags,
+            content_mdx: content_mdx || prev.content_mdx,
+            status: nextStatus,
+            sources: nextSources.length ? nextSources : prev.sources,
+            seo: {
+                metaTitle: metaTitle || prev.seo.metaTitle,
+                metaDescription: metaDescription || prev.seo.metaDescription,
+                ogImageUrl: ogImageUrl || prev.seo.ogImageUrl,
+            },
+        }));
+    };
+
+    const handleApplyImportJson = () => {
+        setImportError(null);
+        try {
+            const parsed = JSON.parse(importJson);
+            applyImportedArticle(parsed);
+        } catch (e) {
+            setImportError(e instanceof Error ? e.message : "Invalid JSON");
+        }
+    };
+
+    const handleImportFile = async (file: File | null) => {
+        if (!file) return;
+        setImportError(null);
+        try {
+            const text = await file.text();
+            setImportJson(text);
+            const parsed = JSON.parse(text);
+            applyImportedArticle(parsed);
+        } catch (e) {
+            setImportError(e instanceof Error ? e.message : "Failed to read JSON file");
+        }
+    };
 
     useEffect(() => {
         if (!isNew) {
@@ -242,6 +381,49 @@ export default function ArticleEditorPage({
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Import from JSON</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <Input
+                                type="file"
+                                accept="application/json,.json"
+                                label="JSON File (.json)"
+                                onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)}
+                            />
+                            <Textarea
+                                label="Paste JSON"
+                                value={importJson}
+                                onChange={(e) => setImportJson(e.target.value)}
+                                placeholder={`{\n  "title": "...",\n  "summary": "...",\n  "category": "AI & ML",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": ""\n  }\n}`}
+                                className="min-h-[180px]"
+                                spellCheck={false}
+                            />
+                            {importError && (
+                                <p className="text-sm text-red-600">{importError}</p>
+                            )}
+                            <div className="flex items-center gap-2">
+                                <Button type="button" variant="outline" onClick={handleApplyImportJson}>
+                                    Apply JSON
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setImportJson("");
+                                        setImportError(null);
+                                    }}
+                                >
+                                    Clear
+                                </Button>
+                            </div>
+                            <p className="text-xs text-zinc-500">
+                                Import hanya mengisi form. Klik Save untuk menyimpan ke database.
+                            </p>
+                        </CardContent>
+                    </Card>
+
                     <Card>
                         <CardHeader>
                             <CardTitle>Article Content</CardTitle>

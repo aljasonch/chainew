@@ -10,6 +10,9 @@ import { formatDate, getBaseUrl } from "@/lib/utils";
 import { ArrowLeft, Eye } from "lucide-react";
 import { headers } from "next/headers";
 import View from "@/models/View";
+import { compileMDX } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
+import { mdxComponents } from "@/components/markdown/components";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -126,45 +129,15 @@ export default async function ArticlePage({ params }: PageProps) {
             ? (article.authorId as { name?: string }).name
             : "Unknown";
 
-    const renderContent = (mdx: string) => {
-        const html = mdx
-            .replace(
-                /^### (.*$)/gim,
-                '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>'
-            )
-            .replace(
-                /^## (.*$)/gim,
-                '<h2 class="text-xl font-semibold mt-6 mb-3">$1</h2>'
-            )
-            .replace(
-                /^# (.*$)/gim,
-                '<h1 class="text-2xl font-bold mt-6 mb-4">$1</h1>'
-            )
-            .replace(/\*\*(.*)\*\*/gim, "<strong>$1</strong>")
-            .replace(/\*(.*)\*/gim, "<em>$1</em>")
-            .replace(
-                /\[([^\]]+)\]\(([^)]+)\)/gim,
-                '<a href="$2" class="text-blue-600 underline">$1</a>'
-            )
-            .replace(
-                /!\[([^\]]*)\]\(([^)]+)\)/gim,
-                '<img src="$2" alt="$1" class="max-w-full rounded-lg my-4" />'
-            )
-            .replace(
-                /```([\s\S]*?)```/gim,
-                '<pre class="bg-zinc-100 p-4 rounded-lg overflow-x-auto my-4"><code>$1</code></pre>'
-            )
-            .replace(/`([^`]+)`/gim, '<code class="bg-zinc-100 px-1 rounded">$1</code>')
-            .replace(
-                /^> (.*$)/gim,
-                '<blockquote class="border-l-4 border-zinc-300 pl-4 italic my-4">$1</blockquote>'
-            )
-            .replace(/^\- (.*$)/gim, '<li class="ml-4">$1</li>')
-            .replace(/\n\n/gim, '</p><p class="my-4">')
-            .replace(/\n/gim, "<br />");
-
-        return `<p class="my-4">${html}</p>`;
-    };
+    const { content } = await compileMDX({
+        source: article.content_mdx || "",
+        options: {
+            mdxOptions: {
+                remarkPlugins: [remarkGfm],
+            },
+        },
+        components: mdxComponents,
+    });
 
     return (
         <>
@@ -220,10 +193,7 @@ export default async function ArticlePage({ params }: PageProps) {
                     <p className="text-zinc-700 font-medium">{article.summary}</p>
                 </div>
 
-                <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: renderContent(article.content_mdx) }}
-                />
+                <div className="prose max-w-none">{content}</div>
 
                 {article.tags && article.tags.length > 0 && (
                     <div className="mt-8 pt-8 border-t border-zinc-200">
