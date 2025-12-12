@@ -4,6 +4,8 @@ import "@/models/User";
 import "@/models/Article";
 import { formatDate } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 async function getRevisions() {
     await dbConnect();
 

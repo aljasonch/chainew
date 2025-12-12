@@ -189,7 +189,7 @@ export const mdxComponents = {
     td: MarkdownTd,
 };
 
-export const reactMarkdownComponents: Components = {
+export const reactMarkdownComponents: Components & { Callout?: typeof MarkdownCallout } = {
     h1: MarkdownH1,
     h2: MarkdownH2,
     h3: MarkdownH3,
