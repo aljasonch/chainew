@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  _request: Request,
-  { params }: { params: { verification: string } },
+  _request: NextRequest,
+  context: { params: Promise<{ verification?: string }> },
 ) {
-  const token = params.verification;
-  const body = `google-site-verification: google${token}.html`;
+  const { verification = "" } = await context.params;
+  const body = `google-site-verification: google${verification}.html`;
 
   return new NextResponse(body, {
     status: 200,
