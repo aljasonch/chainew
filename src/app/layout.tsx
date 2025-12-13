@@ -1,29 +1,77 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { RouteLoadingIndicator } from "@/components/RouteLoadingIndicator";
-import { Suspense } from "react";
+import { getBaseUrl } from "@/lib/utils";
+
+const siteName = "Chainew";
+const siteTitle = `${siteName} — Technology, Finance & Policy News`;
+const siteDescription =
+  "Chainew delivers trusted coverage of AI & ML, blockchain, finance, and public affairs, connecting technology, markets, and policy with clear analysis.";
+const siteKeywords = [
+  "Chainew",
+  "tech news",
+  "technology",
+  "AI",
+  "machine learning",
+  "finance",
+  "fintech",
+  "blockchain",
+  "crypto",
+  "DeFi",
+  "public affairs",
+  "tech policy",
+  "cybersecurity",
+  "software development",
+  "emerging technology",
+  "news analysis",
+];
+
+const baseUrl = getBaseUrl();
+const ogImage = `/api/og?title=${encodeURIComponent(siteName)}&subtitle=${encodeURIComponent(
+  "AI, finance, blockchain, and policy news",
+)}`;
+const googleVerification =
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION;
 
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
+  applicationName: siteName,
   title: {
-    default: "Chainew - Your Trusted News Source",
-    template: "%s | Chainew",
+    default: siteTitle,
+    template: `%s | ${siteName}`,
   },
-  description:
-    "Stay informed with the latest news on AI, software development, cybersecurity, and emerging technologies.",
-  keywords: ["news", "technology", "AI", "software", "cybersecurity", "chainew"],
-  authors: [{ name: "Chainew" }],
+  description: siteDescription,
+  keywords: siteKeywords,
+  authors: [{ name: "Chainew" }, { name: "aljasonch" }],
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Chainew",
+    siteName,
+    title: siteTitle,
+    description: siteDescription,
+    url: baseUrl,
+    images: [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: `${siteName} social preview`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: [ogImage],
   },
   robots: {
     index: true,
     follow: true,
   },
+  verification: googleVerification ? { google: googleVerification } : undefined,
+  category: "technology",
 };
 
 export default function RootLayout({

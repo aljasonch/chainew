@@ -2,7 +2,7 @@ import { Cpu, DollarSign, Coins, Building2 } from "lucide-react";
 
 const team = [
     {
-        name: "Alfonsus Jason Christian",
+        name: "Jason Christian",
         role: "Founder & Editor-in-Chief",
         bio: "Passionate about technology and its intersection with finance, policy, and innovation. Dedicated to delivering insightful analysis on emerging trends.",
     },
