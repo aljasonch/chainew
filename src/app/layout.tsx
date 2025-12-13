@@ -31,8 +31,6 @@ const baseUrl = getBaseUrl();
 const ogImage = `/api/og?title=${encodeURIComponent(siteName)}&subtitle=${encodeURIComponent(
   "AI, finance, blockchain, and policy news",
 )}`;
-const googleVerification =
-  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION;
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -70,7 +68,6 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  verification: googleVerification ? { google: googleVerification } : undefined,
   category: "technology",
 };
 
