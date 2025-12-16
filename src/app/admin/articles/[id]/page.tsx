@@ -277,11 +277,13 @@ export default function ArticleEditorPage({
         }
     };
 
-    const handleTitleChange = (title: string) => {
+    const handleTitleChange = (title: string, autoSlug: boolean = true) => {
         setForm((prev) => ({
             ...prev,
             title,
-            slug: isNew ? slugify(title) : prev.slug,
+            slug: isNew && autoSlug && (!prev.slug || prev.slug === slugify(prev.title))
+                ? slugify(title)
+                : prev.slug,
             seo: {
                 ...prev.seo,
                 metaTitle: prev.seo.metaTitle || title,
@@ -396,7 +398,7 @@ export default function ArticleEditorPage({
                                 label="Paste JSON"
                                 value={importJson}
                                 onChange={(e) => setImportJson(e.target.value)}
-                                placeholder={`{\n  "title": "...",\n  "summary": "...",\n  "category": "AI & ML",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": ""\n  }\n}`}
+                                placeholder={`{\n  "title": "...",\n  "slug": "custom-url-slug",\n  "summary": "...",\n  "category": "AI & ML",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": ""\n  }\n}`}
                                 className="min-h-[180px]"
                                 spellCheck={false}
                             />
@@ -419,7 +421,7 @@ export default function ArticleEditorPage({
                                 </Button>
                             </div>
                             <p className="text-xs text-zinc-500">
-                                Import hanya mengisi form. Klik Save untuk menyimpan ke database.
+                                Import only fills in the form. Click Save to store the data in the database
                             </p>
                         </CardContent>
                     </Card>
