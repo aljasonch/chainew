@@ -55,6 +55,7 @@ export default function ArticleEditorPage({
     const [tagInput, setTagInput] = useState("");
     const [importJson, setImportJson] = useState("");
     const [importError, setImportError] = useState<string | null>(null);
+    const [isSlugManuallySet, setIsSlugManuallySet] = useState(false);
     const [form, setForm] = useState<ArticleFormData>({
         title: "",
         subtitle: "",
@@ -110,6 +111,12 @@ export default function ArticleEditorPage({
                 : title
                     ? slugify(title)
                     : "";
+
+        // Track if slug was explicitly provided in JSON
+        const hasExplicitSlug = typeof article["slug"] === "string" && article["slug"].trim();
+        if (hasExplicitSlug) {
+            setIsSlugManuallySet(true);
+        }
 
         const nextCategory =
             typeof article["category"] === "string" && article["category"].trim()
@@ -281,7 +288,7 @@ export default function ArticleEditorPage({
         setForm((prev) => ({
             ...prev,
             title,
-            slug: isNew && autoSlug && (!prev.slug || prev.slug === slugify(prev.title))
+            slug: isNew && autoSlug && !isSlugManuallySet && (!prev.slug || prev.slug === slugify(prev.title))
                 ? slugify(title)
                 : prev.slug,
             seo: {
@@ -449,9 +456,10 @@ export default function ArticleEditorPage({
                             <Input
                                 label="Slug"
                                 value={form.slug}
-                                onChange={(e) =>
-                                    setForm((prev) => ({ ...prev, slug: e.target.value }))
-                                }
+                                onChange={(e) => {
+                                    setForm((prev) => ({ ...prev, slug: e.target.value }));
+                                    setIsSlugManuallySet(true);
+                                }}
                                 placeholder="url-friendly-slug"
                                 required
                             />
