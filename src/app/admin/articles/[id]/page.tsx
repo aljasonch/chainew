@@ -105,9 +105,9 @@ export default function ArticleEditorPage({
                         ? article["content"]
                         : "";
 
-        const hasExplicitSlug = typeof article["slug"] === "string" && article["slug"].trim();
-        const nextSlug = hasExplicitSlug
-            ? article["slug"]
+        const hasExplicitSlug = typeof article["slug"] === "string" && !!article["slug"].trim();
+        const nextSlug: string = hasExplicitSlug
+            ? (article["slug"] as string)
             : title
                 ? slugify(title)
                 : "";
@@ -173,11 +173,7 @@ export default function ArticleEditorPage({
             ...prev,
             title: title || prev.title,
             subtitle: subtitle || prev.subtitle,
-            slug: isNew
-                ? nextSlug || prev.slug
-                : typeof article["slug"] === "string"
-                    ? article["slug"]
-                    : prev.slug,
+            slug: nextSlug || prev.slug,
             summary: summary || prev.summary,
             category: categories.includes(nextCategory) ? nextCategory : prev.category,
             tags: nextTags.length ? nextTags : prev.tags,
