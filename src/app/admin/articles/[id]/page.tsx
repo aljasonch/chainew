@@ -55,6 +55,7 @@ export default function ArticleEditorPage({
     const [tagInput, setTagInput] = useState("");
     const [importJson, setImportJson] = useState("");
     const [importError, setImportError] = useState<string | null>(null);
+    const [isSlugManuallySet, setIsSlugManuallySet] = useState(false);
     const [form, setForm] = useState<ArticleFormData>({
         title: "",
         subtitle: "",
@@ -104,12 +105,17 @@ export default function ArticleEditorPage({
                         ? article["content"]
                         : "";
 
-        const nextSlug =
-            typeof article["slug"] === "string" && article["slug"].trim()
-                ? article["slug"]
-                : title
-                    ? slugify(title)
-                    : "";
+        const hasExplicitSlug = typeof article["slug"] === "string" && !!article["slug"].trim();
+        const nextSlug: string = hasExplicitSlug
+            ? (article["slug"] as string)
+            : title
+                ? slugify(title)
+                : "";
+
+        // Track if slug was explicitly provided in JSON
+        if (hasExplicitSlug) {
+            setIsSlugManuallySet(true);
+        }
 
         const nextCategory =
             typeof article["category"] === "string" && article["category"].trim()
@@ -167,11 +173,7 @@ export default function ArticleEditorPage({
             ...prev,
             title: title || prev.title,
             subtitle: subtitle || prev.subtitle,
-            slug: isNew
-                ? nextSlug || prev.slug
-                : typeof article["slug"] === "string"
-                    ? article["slug"]
-                    : prev.slug,
+            slug: nextSlug || prev.slug,
             summary: summary || prev.summary,
             category: categories.includes(nextCategory) ? nextCategory : prev.category,
             tags: nextTags.length ? nextTags : prev.tags,
@@ -277,11 +279,13 @@ export default function ArticleEditorPage({
         }
     };
 
-    const handleTitleChange = (title: string) => {
+    const handleTitleChange = (title: string, autoSlug: boolean = true) => {
         setForm((prev) => ({
             ...prev,
             title,
-            slug: isNew ? slugify(title) : prev.slug,
+            slug: isNew && autoSlug && !isSlugManuallySet && (!prev.slug || prev.slug === slugify(prev.title))
+                ? slugify(title)
+                : prev.slug,
             seo: {
                 ...prev.seo,
                 metaTitle: prev.seo.metaTitle || title,
@@ -396,7 +400,7 @@ export default function ArticleEditorPage({
                                 label="Paste JSON"
                                 value={importJson}
                                 onChange={(e) => setImportJson(e.target.value)}
-                                placeholder={`{\n  "title": "...",\n  "summary": "...",\n  "category": "AI & ML",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": ""\n  }\n}`}
+                                placeholder={`{\n  "title": "...",\n  "slug": "custom-url-slug",\n  "summary": "...",\n  "category": "AI & ML",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": ""\n  }\n}`}
                                 className="min-h-[180px]"
                                 spellCheck={false}
                             />
@@ -419,7 +423,7 @@ export default function ArticleEditorPage({
                                 </Button>
                             </div>
                             <p className="text-xs text-zinc-500">
-                                Import hanya mengisi form. Klik Save untuk menyimpan ke database.
+                                Import only fills in the form. Click Save to store the data in the database
                             </p>
                         </CardContent>
                     </Card>
@@ -447,9 +451,10 @@ export default function ArticleEditorPage({
                             <Input
                                 label="Slug"
                                 value={form.slug}
-                                onChange={(e) =>
-                                    setForm((prev) => ({ ...prev, slug: e.target.value }))
-                                }
+                                onChange={(e) => {
+                                    setForm((prev) => ({ ...prev, slug: e.target.value }));
+                                    setIsSlugManuallySet(true);
+                                }}
                                 placeholder="url-friendly-slug"
                                 required
                             />
