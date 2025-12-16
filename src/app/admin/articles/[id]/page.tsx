@@ -105,15 +105,14 @@ export default function ArticleEditorPage({
                         ? article["content"]
                         : "";
 
-        const nextSlug =
-            typeof article["slug"] === "string" && article["slug"].trim()
-                ? article["slug"]
-                : title
-                    ? slugify(title)
-                    : "";
+        const hasExplicitSlug = typeof article["slug"] === "string" && article["slug"].trim();
+        const nextSlug = hasExplicitSlug
+            ? article["slug"]
+            : title
+                ? slugify(title)
+                : "";
 
         // Track if slug was explicitly provided in JSON
-        const hasExplicitSlug = typeof article["slug"] === "string" && article["slug"].trim();
         if (hasExplicitSlug) {
             setIsSlugManuallySet(true);
         }
