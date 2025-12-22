@@ -26,16 +26,14 @@ export function Footer() {
                         </p>
                     </div>
 
-                    {/* Categories */}
                     <div>
-                        <h3 className="font-semibold mb-4" style={{ color: 'var(--color-accent)' }}>Categories</h3>
+                        <h3 className="font-semibold mb-4 text-[var(--color-muted)]">Categories</h3>
                         <ul className="space-y-2">
                             {categories.map((category) => (
                                 <li key={category}>
                                     <Link
                                         href={`/category/${category.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
-                                        className="text-sm hover:text-white transition-colors"
-                                        style={{ color: 'var(--color-muted)' }}
+                                        className="text-sm hover:text-[var(--color-text-muted)] transition-colors"
                                     >
                                         {category}
                                     </Link>
@@ -45,13 +43,12 @@ export function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="font-semibold mb-4" style={{ color: 'var(--color-accent)' }}>Resources</h3>
+                        <h3 className="font-semibold mb-4 text-[var(--color-muted)]">Resources</h3>
                         <ul className="space-y-2">
                             <li>
                                 <Link
                                     href="/feed/rss.xml"
-                                    className="text-sm hover:text-white transition-colors"
-                                    style={{ color: 'var(--color-muted)' }}
+                                    className="text-sm hover:text-[var(--color-text-muted)] transition-colors"
                                 >
                                     RSS Feed
                                 </Link>
@@ -59,8 +56,7 @@ export function Footer() {
                             <li>
                                 <Link
                                     href="/sitemap.xml"
-                                    className="text-sm hover:text-white transition-colors"
-                                    style={{ color: 'var(--color-muted)' }}
+                                    className="text-sm hover:text-[var(--color-text-muted)] transition-colors"
                                 >
                                     Sitemap
                                 </Link>
@@ -68,8 +64,7 @@ export function Footer() {
                             <li>
                                 <Link
                                     href="/login"
-                                    className="text-sm hover:text-white transition-colors"
-                                    style={{ color: 'var(--color-muted)' }}
+                                    className="text-sm hover:text-orange-300 transition-colors"
                                 >
                                     Admin Login
                                 </Link>
@@ -78,7 +73,7 @@ export function Footer() {
                     </div>
                 </div>
 
-                <div className="mt-8 pt-8 text-center text-sm" style={{ borderTop: '1px solid var(--color-secondary)', color: 'var(--color-accent)' }}>
+                <div className="mt-8 pt-8 text-center text-sm text-[var(--color-muted)] border-t border-[var(--color-border)]">
                     &copy; {currentYear} Chainew. All rights reserved.
                 </div>
             </div>

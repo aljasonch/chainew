@@ -101,7 +101,7 @@ export default async function LatestPage({ searchParams }: LatestPageProps) {
                                                     {formatDateShort(featuredArticle.publishedAt)}
                                                 </span>
                                             )}
-                                            <span className="px-3 py-1 bg-accent/20 text-accent text-xs font-semibold rounded-full uppercase tracking-wide">
+                                            <span className="px-3 py-1 bg-accent/20 text-[var(--color-muted)] text-xs font-semibold rounded-full uppercase tracking-wide">
                                                 Latest
                                             </span>
                                         </div>
@@ -118,7 +118,7 @@ export default async function LatestPage({ searchParams }: LatestPageProps) {
                                             <span className="text-sm text-muted">
                                                 By <span className="text-inverse font-medium">{featuredArticle.authorId?.name || 'Chainew'}</span>
                                             </span>
-                                            <span className="flex items-center gap-2 text-accent group-hover:translate-x-1 transition-transform">
+                                            <span className="flex items-center gap-2 text-[var(--color-muted)] hover:text-[var(--color-text-muted)] group-hover:translate-x-1 transition-transform">
                                                 Read Full Story
                                                 <ArrowUpRight size={20} />
                                             </span>
