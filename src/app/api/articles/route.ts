@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/db";
+import { sendDiscordPublishNotification } from "@/lib/discord";
 import Article from "@/models/Article";
 import "@/models/User";
 import Revision from "@/models/Revision";
@@ -83,7 +84,21 @@ export async function POST(request: NextRequest) {
             body.publishedAt = new Date();
         }
 
-        const article = await Article.create(body);
+        const [article] = await Article.create([body]);
+
+        // Auto publish to Discord if article is published
+        if (article.status === "published") {
+            await sendDiscordPublishNotification({
+                title: article.title,
+                slug: article.slug,
+                summary: article.summary,
+                category: article.category,
+                tags: article.tags,
+                ogImageUrl: article.seo?.ogImageUrl,
+                publishedAt: article.publishedAt,
+                authorName: session.user.name,
+            });
+        }
 
         return NextResponse.json({
             success: true,
@@ -124,6 +139,8 @@ export async function PUT(request: NextRequest) {
             );
         }
 
+        const wasPublished = existingArticle.status === "published";
+
         // Track changes for revision
         const changes: Record<string, { old: unknown; new: unknown }> = {};
         for (const key of Object.keys(updateData)) {
@@ -149,6 +166,20 @@ export async function PUT(request: NextRequest) {
         const article = await Article.findByIdAndUpdate(id, updateData, {
             new: true,
         });
+
+        // Auto publish to Discord if article just got published
+        if (article && article.status === "published" && !wasPublished) {
+            await sendDiscordPublishNotification({
+                title: article.title,
+                slug: article.slug,
+                summary: article.summary,
+                category: article.category,
+                tags: article.tags,
+                ogImageUrl: article.seo?.ogImageUrl,
+                publishedAt: article.publishedAt,
+                authorName: session.user.name,
+            });
+        }
 
         // Create revision if there are changes
         if (Object.keys(changes).length > 0) {

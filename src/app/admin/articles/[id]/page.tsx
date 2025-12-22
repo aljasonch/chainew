@@ -9,7 +9,7 @@ import { Select } from "@/components/ui/Select";
 import { MdxEditor } from "@/components/admin/MdxEditor";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { ArrowLeft, Save, Plus, X } from "lucide-react";
+import { ArrowLeft, Save, Plus, X, Share2 } from "lucide-react";
 import Link from "next/link";
 import { slugify } from "@/lib/utils";
 
@@ -52,6 +52,7 @@ export default function ArticleEditorPage({
     const isNew = resolvedParams.id === "new";
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
+    const [sharing, setSharing] = useState(false);
     const [tagInput, setTagInput] = useState("");
     const [importJson, setImportJson] = useState("");
     const [importError, setImportError] = useState<string | null>(null);
@@ -337,6 +338,38 @@ export default function ArticleEditorPage({
         }));
     };
 
+    const handleShareToDiscord = async () => {
+        if (isNew) {
+            alert("Please save the article first before sharing to Discord");
+            return;
+        }
+
+        if (form.status !== "published") {
+            alert("Article must be published before sharing to Discord");
+            return;
+        }
+
+        setSharing(true);
+        try {
+            const res = await fetch(`/api/articles/${resolvedParams.id}/discord`, {
+                method: "POST",
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                alert("Article shared to Discord successfully!");
+            } else {
+                alert(data.error || "Failed to share to Discord");
+            }
+        } catch (error) {
+            console.error("Failed to share to Discord:", error);
+            alert("Failed to share to Discord");
+        } finally {
+            setSharing(false);
+        }
+    };
+
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -380,6 +413,17 @@ export default function ArticleEditorPage({
                         <Save size={18} />
                         {saving ? "Saving..." : "Save"}
                     </Button>
+                    {!isNew && form.status === "published" && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleShareToDiscord}
+                            disabled={sharing}
+                        >
+                            <Share2 size={18} />
+                            {sharing ? "Sharing..." : "Share to Discord"}
+                        </Button>
+                    )}
                 </div>
             </div>
 
