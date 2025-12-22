@@ -1,4 +1,4 @@
-import { getBaseUrl, truncate } from "@/lib/utils";
+import { truncate } from "@/lib/utils";
 
 interface DiscordArticlePayload {
     title: string;
@@ -21,7 +21,8 @@ export async function sendDiscordPublishNotification(
         return;
     }
 
-    const articleUrl = `${getBaseUrl()}/article/${payload.slug}`;
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const articleUrl = `${baseUrl}/article/${payload.slug}`;
     const description = truncate(payload.summary ?? "", 350);
 
     const embed: Record<string, unknown> = {
