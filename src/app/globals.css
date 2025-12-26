@@ -246,6 +246,21 @@ body {
   color: var(--color-text-inverse);
 }
 
+.badge-success {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.badge-warning {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.badge-destructive {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
 .card {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
@@ -622,6 +637,7 @@ body {
 .opacity-muted {
   opacity: 0.6;
 }
+
 .prose {
   max-width: none !important;
 }
@@ -631,4 +647,77 @@ body {
 .prose blockquote {
   max-width: none;
   text-align: justify;
+}
+
+/* Additional utility classes for components */
+.bg-error {
+  background-color: var(--color-error);
+}
+
+.bg-white {
+  background-color: #ffffff;
+}
+
+.bg-error-light {
+  background-color: var(--color-error-light);
+}
+
+.hover\:bg-error-light:hover {
+  background-color: var(--color-error-light);
+}
+
+.text-error {
+  color: var(--color-error);
+}
+
+.border-error {
+  border-color: var(--color-error);
+}
+
+.focus\:ring-error:focus {
+  --tw-ring-color: var(--color-error);
+}
+
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+.text-white {
+  color: #ffffff;
+}
+
+.bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.border-white\/20 {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.placeholder\:text-white\/60::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.focus\:border-white:focus {
+  border-color: #ffffff;
+}
+
+.border-r {
+  border-right-width: 1px;
+}
+
+.border-r.border-default {
+  border-right-color: var(--color-border);
+}
+
+.border-b {
+  border-bottom-width: 1px;
+}
+
+.border-b.border-default {
+  border-bottom-color: var(--color-border);
+}
+
+.hover\:text-orange-300:hover {
+  color: #fdba74;
 }

@@ -21,8 +21,7 @@ export function SkeletonText({ lines = 3 }: { lines?: number }) {
 export function ArticleCardSkeleton() {
     return (
         <div
-            className="rounded-lg overflow-hidden animate-pulse"
-            style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+            className="rounded-lg overflow-hidden animate-pulse card"
         >
             <Skeleton className="h-48 rounded-none" />
             <div className="p-4 space-y-3">
@@ -41,8 +40,7 @@ export function ArticleCardSkeleton() {
 export function FeaturedArticleSkeleton() {
     return (
         <div
-            className="md:flex rounded-lg overflow-hidden animate-pulse"
-            style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+            className="md:flex rounded-lg overflow-hidden animate-pulse card"
         >
             <Skeleton className="md:w-1/2 h-48 md:h-64 rounded-none" />
             <div className="md:w-1/2 p-6 space-y-4">
@@ -60,7 +58,7 @@ export function FeaturedArticleSkeleton() {
 
 export function TableRowSkeleton({ columns = 5 }: { columns?: number }) {
     return (
-        <tr className="animate-pulse" style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <tr className="animate-pulse border-b border-default">
             {Array.from({ length: columns }).map((_, i) => (
                 <td key={i} className="px-4 py-3">
                     <Skeleton className="h-5 w-full" />
@@ -73,8 +71,7 @@ export function TableRowSkeleton({ columns = 5 }: { columns?: number }) {
 export function StatsCardSkeleton() {
     return (
         <div
-            className="rounded-lg p-6 animate-pulse"
-            style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+            className="rounded-lg p-6 animate-pulse card"
         >
             <div className="flex items-start justify-between">
                 <div className="space-y-2 flex-1">

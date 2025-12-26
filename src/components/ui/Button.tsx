@@ -11,9 +11,9 @@ const buttonVariants = cva(
                 secondary: "btn-secondary hover:shadow-md",
                 outline: "btn-outline",
                 ghost: "btn-ghost",
-                destructive: "bg-[var(--color-error)] text-white hover:bg-red-700 hover:shadow-md",
+                destructive: "bg-error text-white hover:bg-red-700 hover:shadow-md",
                 accent: "btn-accent hover:shadow-md",
-                link: "text-[var(--color-primary)] underline-offset-4 hover:underline hover:text-[var(--color-accent)]",
+                link: "text-primary underline-offset-4 hover:underline hover:text-accent",
             },
             size: {
                 default: "h-10 px-4 py-2",
