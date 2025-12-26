@@ -64,7 +64,7 @@ export function Footer() {
                             <li>
                                 <Link
                                     href="/login"
-                                    className="text-sm hover:text-orange-300 transition-colors login-link"
+                                    className="text-sm hover:text-orange-300 transition-colors"
                                 >
                                     Admin Login
                                 </Link>

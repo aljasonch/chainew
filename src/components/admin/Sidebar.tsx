@@ -144,9 +144,6 @@ export function Sidebar() {
                     <button
                         onClick={() => signOut({ callbackUrl: "/login" })}
                         className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors text-primary hover:bg-error-light hover:text-error"
-                        onMouseLeave={(e) => {
-                            e.currentTarget.classList.remove('bg-error-light', 'text-error');
-                        }}
                     >
                         <LogOut size={16} />
                         Sign out
@@ -185,7 +182,10 @@ export function Sidebar() {
                                 key={item.href}
                                 href={item.href}
                                 onClick={() => setMobileOpen(false)}
-                                className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-primary"
+                                className={cn(
+                                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                                    isActive ? "bg-primary text-inverse" : "text-primary"
+                                )}
                                 style={{
                                     transform: mobileOpen ? "translateX(0)" : "translateX(-10px)",
                                     opacity: mobileOpen ? 1 : 0,
