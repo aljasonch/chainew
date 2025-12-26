@@ -31,17 +31,12 @@ export function ArticleCard({ article, featured = false, index = 0 }: ArticleCar
         hover-lift transition-smooth
         animate-fadeInUp animate-on-load ${staggerClass}
         ${featured ? "md:flex" : ""}
+        card
       `}
-            style={{
-                animationFillMode: 'forwards',
-                background: 'var(--color-bg-card)',
-                border: '1px solid var(--color-border)'
-            }}
         >
             <div
                 className={`overflow-hidden ${featured ? "md:w-1/2 h-48 md:h-auto" : "h-48"
-                    }`}
-                style={{ background: 'var(--color-muted)' }}
+                    } bg-muted`}
             >
                 {article.seo?.ogImageUrl ? (
                     <img

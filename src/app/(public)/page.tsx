@@ -232,7 +232,7 @@ export default async function HomePage() {
 
               <h2 className="text-3xl md:text-5xl font-black text-inverse mb-6 leading-tight">
                 Stay Ahead of the <br />
-                <span className="text-accent">Tech Curve</span>
+                <span className="text-white">Tech Curve</span>
               </h2>
 
               <p className="text-inverse text-lg mb-8 max-w-md leading-relaxed opacity-90">
@@ -243,9 +243,9 @@ export default async function HomePage() {
                 <input
                   type="email"
                   placeholder="name@example.com"
-                  className="px-6 py-4 rounded-xl bg-primary border border-primary text-inverse placeholder:text-muted focus:border-accent focus:outline-none flex-1 transition-all"
+                  className="px-6 py-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-white/60 focus:border-white focus:outline-none flex-1 transition-all"
                 />
-                <button className="px-8 py-4 bg-accent text-inverse rounded-xl font-bold hover:bg-white hover:text-secondary transition-all shadow-lg">
+                <button className="px-8 py-4 bg-white text-secondary rounded-xl font-bold hover:bg-accent hover:text-white transition-all shadow-lg">
                   Join Now
                 </button>
               </div>

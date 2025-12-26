@@ -11,9 +11,9 @@ const badgeVariants = cva(
                 secondary: "badge-secondary",
                 accent: "badge-accent",
                 medium: "badge-medium",
-                success: "bg-[var(--color-success-light)] text-emerald-700",
-                warning: "bg-[var(--color-warning-light)] text-amber-700",
-                destructive: "bg-[var(--color-error-light)] text-red-700",
+                success: "badge-success",
+                warning: "badge-warning",
+                destructive: "badge-destructive",
             },
         },
         defaultVariants: {

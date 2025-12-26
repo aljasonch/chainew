@@ -11,7 +11,7 @@ export function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-inverse)' }}>
+        <footer className="bg-primary text-inverse">
             <div className="max-w-7xl mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Brand */}
@@ -19,7 +19,7 @@ export function Footer() {
                         <Link href="/" className="text-2xl font-bold text-white">
                             Chainew
                         </Link>
-                        <p className="mt-4 text-sm max-w-md" style={{ color: 'var(--color-muted)' }}>
+                        <p className="mt-4 text-sm max-w-md text-muted">
                             Your trusted source for the latest news and updates. Stay
                             informed with comprehensive coverage of AI, software development,
                             cybersecurity, and emerging technologies.
@@ -27,13 +27,13 @@ export function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="font-semibold mb-4 text-[var(--color-muted)]">Categories</h3>
+                        <h3 className="font-semibold mb-4 text-muted">Categories</h3>
                         <ul className="space-y-2">
                             {categories.map((category) => (
                                 <li key={category}>
                                     <Link
                                         href={`/category/${category.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
-                                        className="text-sm hover:text-[var(--color-text-muted)] transition-colors"
+                                        className="text-sm hover:text-muted transition-colors"
                                     >
                                         {category}
                                     </Link>
@@ -43,12 +43,12 @@ export function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="font-semibold mb-4 text-[var(--color-muted)]">Resources</h3>
+                        <h3 className="font-semibold mb-4 text-muted">Resources</h3>
                         <ul className="space-y-2">
                             <li>
                                 <Link
                                     href="/feed/rss.xml"
-                                    className="text-sm hover:text-[var(--color-text-muted)] transition-colors"
+                                    className="text-sm hover:text-muted transition-colors"
                                 >
                                     RSS Feed
                                 </Link>
@@ -56,7 +56,7 @@ export function Footer() {
                             <li>
                                 <Link
                                     href="/sitemap.xml"
-                                    className="text-sm hover:text-[var(--color-text-muted)] transition-colors"
+                                    className="text-sm hover:text-muted transition-colors"
                                 >
                                     Sitemap
                                 </Link>
@@ -64,7 +64,7 @@ export function Footer() {
                             <li>
                                 <Link
                                     href="/login"
-                                    className="text-sm hover:text-orange-300 transition-colors"
+                                    className="text-sm hover:text-orange-300 transition-colors login-link"
                                 >
                                     Admin Login
                                 </Link>
@@ -73,7 +73,7 @@ export function Footer() {
                     </div>
                 </div>
 
-                <div className="mt-8 pt-8 text-center text-sm text-[var(--color-muted)] border-t border-[var(--color-border)]">
+                <div className="mt-8 pt-8 text-center text-sm text-muted border-t border-default">
                     &copy; {currentYear} Chainew. All rights reserved.
                 </div>
             </div>

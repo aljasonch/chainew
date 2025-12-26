@@ -39,8 +39,7 @@ export function Sidebar() {
     return (
         <>
             <div
-                className="lg:hidden fixed top-0 left-0 right-0 px-4 py-3 flex items-center justify-between z-40"
-                style={{ background: 'var(--color-bg-card)', borderBottom: '1px solid var(--color-border)' }}
+                className="lg:hidden fixed top-0 left-0 right-0 px-4 py-3 flex items-center justify-between z-40 bg-card border-b border-default"
             >
                 <Link href="/admin" className="font-bold text-primary">
                     Chainew Admin
@@ -69,8 +68,7 @@ export function Sidebar() {
             </div>
 
             <aside
-                className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 w-64"
-                style={{ background: 'var(--color-bg-card)', borderRight: '1px solid var(--color-border)' }}
+                className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 w-64 bg-card border-r border-default"
             >
                 <div className="p-6">
                     <Link
@@ -95,13 +93,9 @@ export function Sidebar() {
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 group"
+                                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 group",
+                                    isActive ? "bg-primary text-inverse" : "text-primary"
                                 )}
-                                style={{
-                                    animationDelay: `${index * 0.05}s`,
-                                    background: isActive ? 'var(--color-primary)' : 'transparent',
-                                    color: isActive ? 'var(--color-text-inverse)' : 'var(--color-text-primary)'
-                                }}
                                 onMouseEnter={(e) => {
                                     if (!isActive) {
                                         e.currentTarget.style.background = 'var(--color-muted)';
@@ -130,13 +124,11 @@ export function Sidebar() {
                 </nav>
 
                 <div
-                    className="p-4"
-                    style={{ borderTop: '1px solid var(--color-border)' }}
+                    className="p-4 border-t border-default"
                 >
                     <div className="flex items-center gap-3 mb-3">
                         <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-                            style={{ background: 'var(--color-accent)', color: 'var(--color-text-inverse)' }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-accent text-inverse"
                         >
                             {session?.user.name?.charAt(0).toUpperCase()}
                         </div>
@@ -151,15 +143,9 @@ export function Sidebar() {
                     </div>
                     <button
                         onClick={() => signOut({ callbackUrl: "/login" })}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors"
-                        style={{ color: 'var(--color-text-primary)' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'var(--color-error-light)';
-                            e.currentTarget.style.color = 'var(--color-error)';
-                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors text-primary hover:bg-error-light hover:text-error"
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.color = 'var(--color-text-primary)';
+                            e.currentTarget.classList.remove('bg-error-light', 'text-error');
                         }}
                     >
                         <LogOut size={16} />
@@ -178,14 +164,11 @@ export function Sidebar() {
 
             <aside
                 className={cn(
-                    "lg:hidden fixed top-0 left-0 bottom-0 w-64 z-50 flex flex-col transform transition-transform duration-300 ease-out"
+                    "lg:hidden fixed top-0 left-0 bottom-0 w-64 z-50 flex flex-col transform transition-transform duration-300 ease-out bg-card",
+                    mobileOpen ? "translate-x-0" : "-translate-x-full"
                 )}
-                style={{
-                    background: 'var(--color-bg-card)',
-                    transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)'
-                }}
             >
-                <div className="p-6" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <div className="p-6 border-b border-default">
                     <Link href="/admin" className="text-xl font-bold text-primary">
                         Chainew Admin
                     </Link>
@@ -202,13 +185,11 @@ export function Sidebar() {
                                 key={item.href}
                                 href={item.href}
                                 onClick={() => setMobileOpen(false)}
-                                className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                                className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-primary"
                                 style={{
                                     transform: mobileOpen ? "translateX(0)" : "translateX(-10px)",
                                     opacity: mobileOpen ? 1 : 0,
                                     transition: `all 0.2s ease ${index * 0.05}s`,
-                                    background: isActive ? 'var(--color-primary)' : 'transparent',
-                                    color: isActive ? 'var(--color-text-inverse)' : 'var(--color-text-primary)'
                                 }}
                             >
                                 <item.icon size={18} />
@@ -218,7 +199,7 @@ export function Sidebar() {
                     })}
                 </nav>
 
-                <div className="p-4" style={{ borderTop: '1px solid var(--color-border)' }}>
+                <div className="p-4 border-t border-default">
                     <button
                         onClick={() => signOut({ callbackUrl: "/login" })}
                         className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors text-primary hover:bg-muted"
