@@ -146,9 +146,8 @@ export async function POST(request: NextRequest) {
         summary: nfArticle.summary,
         category,
         tags: [
-            nfArticle.topic.toLowerCase().replace(/\s+/g, "-"),
             "neurafeed",
-            "ai-news",
+            ...(nfArticle.tags || []).map((t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""))
         ],
         content_mdx: "",
         content_html,
