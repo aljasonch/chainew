@@ -723,59 +723,13 @@ body {
 }
 
 /* ──────────────────────────────────────────────
-   NeuraFeed HTML article body styles
-   Scoped to .neurafeed-article-body to avoid
-   bleeding into other page content.
+   NeuraFeed article body — extends .prose.
+   Only adds styles that .prose doesn't already cover.
+   h2/h3/p/strong/em all inherit from .prose for
+   visual consistency with regular articles.
 ────────────────────────────────────────────── */
 
-.neurafeed-article-body {
-  font-size: 1rem;
-  line-height: 1.8;
-  color: var(--color-text-primary);
-}
-
-.neurafeed-article-body h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 2rem 0 0.6rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-primary);
-  letter-spacing: -0.02em;
-}
-
-.neurafeed-article-body h2:first-child {
-  margin-top: 0;
-}
-
-.neurafeed-article-body h3 {
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
-  margin: 1.4rem 0 0.4rem;
-}
-
-.neurafeed-article-body p {
-  margin: 0 0 1rem;
-}
-
-.neurafeed-article-body p:last-child {
-  margin-bottom: 0;
-}
-
-.neurafeed-article-body strong {
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-.neurafeed-article-body em {
-  font-style: italic;
-  color: var(--color-text-secondary);
-}
-
-/* Inline citation superscript */
+/* Inline citation superscript — the one thing prose doesn't style */
 .neurafeed-article-body sup {
   font-size: 0.65em;
   color: #3b82f6;

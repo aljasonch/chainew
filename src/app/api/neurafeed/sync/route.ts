@@ -21,6 +21,7 @@ import {
     detectCategory,
     parseNeuraFeedSources,
     buildSlug,
+    sanitizeNeuraFeedHtml,
 } from "@/lib/neurafeed";
 
 // ──────────────────────────────────────────────
@@ -96,14 +97,34 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    // 3. Deduplication check
-    const existing = await Article.findOne({ neuraFeedId: nfArticle.id }).lean();
-    if (existing) {
+    // 3. Deduplication: compare the live article's ID against what we last imported.
+    //    This avoids a full insert attempt when there is nothing new.
+    const lastImported = await Article.findOne({ source: "neurafeed" })
+        .sort({ publishedAt: -1 })
+        .select("neuraFeedId")
+        .lean() as { neuraFeedId?: string } | null;
+
+    if (lastImported?.neuraFeedId && lastImported.neuraFeedId === nfArticle.id) {
         return NextResponse.json({
             success: true,
             synced: false,
             reason: "already_imported",
-            id: String(existing._id),
+            message: "No new articles found. The latest NeuraFeed article is already published.",
+            id: nfArticle.id,
+            topic: nfArticle.topic,
+        });
+    }
+
+    // 4. Secondary dedup: also check by neuraFeedId in case there are
+    //    older articles with a matching ID that aren't the most recent.
+    const existingById = await Article.findOne({ neuraFeedId: nfArticle.id }).lean();
+    if (existingById) {
+        return NextResponse.json({
+            success: true,
+            synced: false,
+            reason: "already_imported",
+            message: "This article already exists in the database.",
+            id: nfArticle.id,
             topic: nfArticle.topic,
         });
     }
@@ -115,8 +136,8 @@ export async function POST(request: NextRequest) {
     const category = detectCategory(nfArticle.topic, nfArticle.title);
     const slug = buildSlug(nfArticle.title, nfArticle.createdAt);
     const sources = parseNeuraFeedSources(nfArticle.sources);
-    // article field is HTML — store directly in content_html; leave content_mdx empty
-    const content_html = nfArticle.article;
+    // article field is HTML — sanitize markdown residue, then store in content_html
+    const content_html = sanitizeNeuraFeedHtml(nfArticle.article);
 
     const articleData = {
         title: nfArticle.title,

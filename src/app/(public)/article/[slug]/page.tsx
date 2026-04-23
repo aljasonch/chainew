@@ -14,6 +14,7 @@ import View from "@/models/View";
 import { compileMDX } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { mdxComponents } from "@/components/markdown/components";
+import { sanitizeNeuraFeedHtml } from "@/lib/neurafeed";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -209,8 +210,12 @@ export default async function ArticlePage({ params }: PageProps) {
                 {/* Article body: HTML for NeuraFeed, MDX for manual articles */}
                 {isNeuraFeed ? (
                     <div
-                        className="neurafeed-article-body"
-                        dangerouslySetInnerHTML={{ __html: (article as unknown as { content_html?: string }).content_html || "" }}
+                        className="prose max-w-none neurafeed-article-body"
+                        dangerouslySetInnerHTML={{
+                            __html: sanitizeNeuraFeedHtml(
+                                (article as unknown as { content_html?: string }).content_html || ""
+                            )
+                        }}
                     />
                 ) : (
                     <div className="prose max-w-none">{content}</div>
