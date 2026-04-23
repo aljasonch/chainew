@@ -39,7 +39,7 @@ interface ImportedArticle {
 export default function NeuraFeedAdminPage() {
     const [liveArticle, setLiveArticle] = useState<NeuraFeedLiveArticle | null>(null);
     const [importedArticles, setImportedArticles] = useState<ImportedArticle[]>([]);
-    const [lastSync, setLastSync] = useState<{ id?: string; synced?: boolean } | null>(null);
+    const [lastSync, setLastSync] = useState<{ id?: string; synced?: boolean; neuraFeedId?: string } | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
     const [loadingLive, setLoadingLive] = useState(true);
@@ -94,6 +94,28 @@ export default function NeuraFeedAdminPage() {
         setIsSyncing(true);
         setSyncResult(null);
         try {
+            // 1. Manually check if there is new latest news
+            const resLive = await fetch("https://neurafeed.vercel.app/api/latest-news");
+            const dataLive = await resLive.json();
+            const liveId = dataLive.article?.id;
+
+            const resLocal = await fetch("/api/neurafeed/sync");
+            const dataLocal = await resLocal.json();
+            const localId = dataLocal.lastImport?.neuraFeedId;
+
+            // 2. If there is none, just give visual feedback
+            if (liveId && localId && liveId === localId) {
+                setSyncResult({ 
+                    success: true, 
+                    synced: false, 
+                    reason: "already_imported", 
+                    message: "No new articles found. Everything is up to date." 
+                });
+                setIsSyncing(false);
+                return;
+            }
+
+            // 3. If there is, pull the latest news
             const res = await fetch("/api/neurafeed/sync", { method: "POST" });
             const data: SyncResult = await res.json();
             setSyncResult(data);
@@ -102,7 +124,7 @@ export default function NeuraFeedAdminPage() {
                 await fetchLastSync();
             }
         } catch {
-            setSyncResult({ success: false, error: "Request failed" });
+            setSyncResult({ success: false, error: "Failed to check or pull updates" });
         } finally {
             setIsSyncing(false);
         }
@@ -131,7 +153,7 @@ export default function NeuraFeedAdminPage() {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500 text-white text-sm font-semibold hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     <RefreshCw size={15} className={isSyncing ? "animate-spin" : ""} />
-                    {isSyncing ? "Syncing…" : "Sync Now"}
+                    {isSyncing ? "Checking..." : "Check for Updates"}
                 </button>
             </div>
 
@@ -156,7 +178,7 @@ export default function NeuraFeedAdminPage() {
                             <p className="font-semibold">New article imported!</p>
                         )}
                         {syncResult.reason === "already_imported" && (
-                            <p className="font-semibold">Already up to date</p>
+                            <p className="font-semibold">{syncResult.message || "No new articles found"}</p>
                         )}
                         {syncResult.reason === "stale" && (
                             <p className="font-semibold">Article is too old — skipped</p>
@@ -245,8 +267,8 @@ export default function NeuraFeedAdminPage() {
                     </div>
                     <div className="p-5 space-y-4">
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-zinc-500">Cron schedule</span>
-                            <span className="font-mono text-xs bg-zinc-100 px-2 py-1 rounded">0 0 * * * (00:30 UTC)</span>
+                            <span className="text-zinc-500">Auto-check schedule</span>
+                            <span className="font-mono text-xs bg-zinc-100 px-2 py-1 rounded">09:00 local (02:00 UTC)</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-zinc-500">Total imported</span>
@@ -273,8 +295,8 @@ export default function NeuraFeedAdminPage() {
                         </div>
                         <div className="pt-2 border-t border-zinc-100">
                             <p className="text-xs text-zinc-400">
-                                Articles are auto-imported 30 minutes after NeuraFeed generates (00:30 UTC).
-                                Use &ldquo;Sync Now&rdquo; to import immediately.
+                                Articles are auto-checked daily at <strong className="text-zinc-500">9:00 AM (02:00 UTC)</strong>.
+                                Only pulled if NeuraFeed has new content since last import.
                             </p>
                         </div>
                     </div>
@@ -301,7 +323,7 @@ export default function NeuraFeedAdminPage() {
                     <div className="p-8 text-center">
                         <Zap size={32} className="text-zinc-200 mx-auto mb-3" />
                         <p className="text-zinc-400 text-sm">No NeuraFeed articles imported yet.</p>
-                        <p className="text-zinc-300 text-xs mt-1">Click &ldquo;Sync Now&rdquo; to pull the latest article.</p>
+                        <p className="text-zinc-300 text-xs mt-1">Click &ldquo;Check for Updates&rdquo; to pull the latest article.</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-zinc-100">

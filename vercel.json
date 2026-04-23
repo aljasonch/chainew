@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/neurafeed/sync",
-      "schedule": "30 0 * * *"
+      "schedule": "0 2 * * *"
     }
   ]
 }
