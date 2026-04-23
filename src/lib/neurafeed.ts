@@ -7,6 +7,7 @@ export interface NeuraFeedArticle {
     article: string;
     whyItMatters: string;
     sources: string[];
+    tags: string[];
     topic: string;
     createdAt: string; // ISO 8601
 }

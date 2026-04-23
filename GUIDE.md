@@ -31,6 +31,7 @@ GET https://neurafeed.vercel.app/api/latest-news
     "summary": "2-3 sentence executive summary.",
     "article": "<h2>Subtopic</h2><p>Content with inline citation.<sup>[1]</sup></p>...",
     "whyItMatters": "2-3 sentences explaining significance.",
+    "tags": ["AI", "OpenAI", "GPT-4"],
     "sources": [
       "[1] TechCrunch: https://techcrunch.com/...",
       "[2] The Verge: https://www.theverge.com/..."
@@ -56,6 +57,7 @@ GET https://neurafeed.vercel.app/api/latest-news
 | `summary` | string | Short executive summary — plain text, no HTML |
 | `article` | **HTML string** | Full article body — **must be rendered as HTML**, see below |
 | `whyItMatters` | string | Significance paragraph — plain text, no HTML |
+| `tags` | string[] | Array of 3-5 relevant string tags |
 | `sources` | string[] | Numbered source list — format `"[N] Name: URL"`, see below |
 | `topic` | string | The topic that drove generation |
 | `createdAt` | string | ISO 8601 timestamp |
@@ -160,9 +162,12 @@ Every article body follows this structure:
 
 <h2>Third Subtopic</h2>
 <p>
-  Companies like <strong>Anthropic</strong> and <strong>OpenAI</strong> are...
-  This is <em>particularly</em> significant because...<sup>[2]</sup>
+  Key features include:
 </p>
+<ul>
+  <li><strong>First Feature:</strong> Description of the feature.<sup>[2]</sup></li>
+  <li><strong>Second Feature:</strong> Description of another feature.</li>
+</ul>
 ```
 
 **Tags used:**
@@ -172,6 +177,7 @@ Every article body follows this structure:
 | `<h2>` | Main subtopic heading (3–5 per article) |
 | `<h3>` | Sub-section heading (optional, used sparingly) |
 | `<p>` | Paragraph — 2–3 per `<h2>` section |
+| `<ul>`, `<ol>`, `<li>` | Bullet points or numbered lists |
 | `<strong>` | Key terms, company names, model names, statistics (first mention) |
 | `<em>` | Genuine emphasis only |
 | `<sup>[N]</sup>` | Inline citation number matching the `sources` array |
@@ -179,7 +185,7 @@ Every article body follows this structure:
 **Guaranteed never present:**
 - Em-dashes (`—`)
 - Emoji or emoticons
-- `<div>`, `<ul>`, `<li>`, `<br>`, `<a>`, or any other tag
+- `<div>`, `<br>`, `<a>`, or any other unsupported tag
 
 ---
 
@@ -227,6 +233,12 @@ export function ArticleRenderer({ article }: { article: NeuraFeedArticle }) {
         className="article-body"
         dangerouslySetInnerHTML={{ __html: article.article }}
       />
+
+      {article.tags?.length > 0 && (
+        <div className="tags">
+          {article.tags.map(t => <span key={t}>#{t}</span>)}
+        </div>
+      )}
 
       {article.whyItMatters && (
         <aside className="why-matters">
@@ -276,6 +288,14 @@ async function renderLatestArticle(containerEl) {
   // Article body — HTML, use innerHTML
   containerEl.querySelector('.article-body').innerHTML = article.article;
 
+  // Tags — plain text
+  if (article.tags && article.tags.length > 0) {
+    const tagsContainer = containerEl.querySelector('.tags');
+    if (tagsContainer) {
+      tagsContainer.innerHTML = article.tags.map(t => `<span>#${t}</span>`).join(' ');
+    }
+  }
+
   // Why it matters — plain text
   if (article.whyItMatters) {
     containerEl.querySelector('.why-matters').textContent = article.whyItMatters;
@@ -307,6 +327,7 @@ interface NeuraFeedArticle {
   summary:      string;          // plain text
   article:      string;          // HTML string — render with innerHTML / dangerouslySetInnerHTML
   whyItMatters: string;          // plain text
+  tags:         string[];        // array of tag strings
   sources:      string[];        // "[N] Name: URL" format
   topic:        string;          // plain text
   createdAt:    string;          // ISO 8601
@@ -353,6 +374,16 @@ Style the injected article HTML with scoped selectors. Adjust to match your desi
   margin: 0 0 0.9rem;
 }
 .article-body p:last-child { margin-bottom: 0; }
+
+.article-body ul, .article-body ol {
+  margin: 0 0 0.9rem;
+  padding-left: 1.25rem;
+}
+
+.article-body li {
+  margin-bottom: 0.35rem;
+}
+.article-body li:last-child { margin-bottom: 0; }
 
 .article-body strong {
   font-weight: 600;
