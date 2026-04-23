@@ -89,7 +89,6 @@ const ArticleSchema = new Schema<IArticle>(
         },
         neuraFeedId: {
             type: String,
-            sparse: true,
         },
     },
     {
