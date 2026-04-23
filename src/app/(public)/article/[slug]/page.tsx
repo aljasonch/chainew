@@ -5,6 +5,7 @@ import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
 import "@/models/User";
 import { Badge } from "@/components/ui/Badge";
+import { NeuraFeedBadge } from "@/components/ui/NeuraFeedBadge";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { formatDate, getBaseUrl } from "@/lib/utils";
 import { ArrowLeft, Eye } from "lucide-react";
@@ -129,15 +130,22 @@ export default async function ArticlePage({ params }: PageProps) {
             ? (article.authorId as { name?: string }).name
             : "Unknown";
 
-    const { content } = await compileMDX({
-        source: article.content_mdx || "",
-        options: {
-            mdxOptions: {
-                remarkPlugins: [remarkGfm],
+    const isNeuraFeed = (article as unknown as { source?: string }).source === "neurafeed";
+
+    // Only compile MDX for manually written articles
+    let content: React.ReactNode = null;
+    if (!isNeuraFeed && article.content_mdx) {
+        const compiled = await compileMDX({
+            source: article.content_mdx || "",
+            options: {
+                mdxOptions: {
+                    remarkPlugins: [remarkGfm],
+                },
             },
-        },
-        components: mdxComponents,
-    });
+            components: mdxComponents,
+        });
+        content = compiled.content;
+    }
 
     return (
         <>
@@ -176,7 +184,12 @@ export default async function ArticlePage({ params }: PageProps) {
                         <p className="text-xl text-zinc-600 mb-4">{article.subtitle}</p>
                     )}
 
-                    <p className="text-zinc-500">By {authorName}</p>
+                    <p className="text-zinc-500 flex items-center gap-2">
+                        By {authorName}
+                        {(article as unknown as { source?: string }).source === "neurafeed" && (
+                            <NeuraFeedBadge size="md" />
+                        )}
+                    </p>
                 </header>
 
                 {article.seo.ogImageUrl && (
@@ -193,7 +206,15 @@ export default async function ArticlePage({ params }: PageProps) {
                     <p className="text-zinc-700 font-medium">{article.summary}</p>
                 </div>
 
-                <div className="prose max-w-none">{content}</div>
+                {/* Article body: HTML for NeuraFeed, MDX for manual articles */}
+                {isNeuraFeed ? (
+                    <div
+                        className="neurafeed-article-body"
+                        dangerouslySetInnerHTML={{ __html: (article as unknown as { content_html?: string }).content_html || "" }}
+                    />
+                ) : (
+                    <div className="prose max-w-none">{content}</div>
+                )}
 
                 {article.tags && article.tags.length > 0 && (
                     <div className="mt-8 pt-8 border-t border-zinc-200">
@@ -218,20 +239,31 @@ export default async function ArticlePage({ params }: PageProps) {
                         <h3 className="text-lg font-semibold text-zinc-900 mb-4">
                             Sources
                         </h3>
-                        <ul className="space-y-2">
-                            {article.sources.map((source, index) => (
-                                <li key={index}>
-                                    <a
-                                        href={source.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline"
-                                    >
-                                        {source.name}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
+                        <ol className="space-y-2 list-none p-0">
+                            {article.sources.map((source, index) => {
+                                // Support both plain { name, url } objects stored in DB
+                                // and display citation numbers if available
+                                return (
+                                    <li key={index} className="flex items-start gap-2 text-sm">
+                                        <span className="text-blue-500 font-mono text-xs shrink-0 mt-0.5">
+                                            [{index + 1}]
+                                        </span>
+                                        {source.url ? (
+                                            <a
+                                                href={source.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline break-all font-mono text-xs"
+                                            >
+                                                {source.name}
+                                            </a>
+                                        ) : (
+                                            <span className="text-zinc-600">{source.name}</span>
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ol>
                     </div>
                 )}
             </article>

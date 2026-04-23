@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { NeuraFeedBadge } from "@/components/ui/NeuraFeedBadge";
 import { formatDateShort } from "@/lib/utils";
 
 interface ArticleCardProps {
@@ -9,6 +10,7 @@ interface ArticleCardProps {
         slug: string;
         summary: string;
         category: string;
+        source?: string;
         seo?: {
             ogImageUrl?: string;
         };
@@ -54,10 +56,11 @@ export function ArticleCard({ article, featured = false, index = 0 }: ArticleCar
             </div>
 
             <div className={`p-4 ${featured ? "md:w-1/2 md:p-6" : ""}`}>
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <Badge variant="accent" className="transition-colors">
                         {article.category}
                     </Badge>
+                    {article.source === "neurafeed" && <NeuraFeedBadge />}
                     {article.publishedAt && (
                         <span className="text-sm text-secondary">
                             {formatDateShort(article.publishedAt)}

@@ -9,6 +9,10 @@ interface DiscordArticlePayload {
     ogImageUrl?: string;
     publishedAt?: Date | string;
     authorName?: string;
+    /** When true, renders a distinct NeuraFeed-branded embed */
+    isNeuraFeed?: boolean;
+    /** NeuraFeed topic label (e.g. "Google Gemini 2.5") */
+    topic?: string;
 }
 
 const DISCORD_LIMITS = {
@@ -93,7 +97,8 @@ export async function sendDiscordPublishNotification(
     const embed: Record<string, unknown> = {
         title,
         description: description || "New article published.",
-        color: 0x5865f2,
+        // NeuraFeed = teal (#00b4d8) | manual = indigo (#5865f2)
+        color: payload.isNeuraFeed ? 0x00b4d8 : 0x5865f2,
         fields: [
             {
                 name: "Category",
@@ -105,8 +110,14 @@ export async function sendDiscordPublishNotification(
                 value: tagsValue,
                 inline: true,
             },
+            ...(payload.isNeuraFeed && payload.topic
+                ? [{ name: "Topic", value: clampForDiscord(payload.topic, DISCORD_LIMITS.fieldValue), inline: false }]
+                : []),
         ],
         timestamp,
+        ...(payload.isNeuraFeed
+            ? { footer: { text: "⚡ Powered by NeuraFeed · AI-generated & source-verified" } }
+            : {}),
     };
 
     if (articleUrl) {
@@ -126,7 +137,7 @@ export async function sendDiscordPublishNotification(
 
     const body = {
         username: "Chainews",
-        content: "@everyone",
+        content: payload.isNeuraFeed ? "@everyone" : "@everyone",
         embeds: [embed],
         allowed_mentions: { parse: ["everyone"] },
     };

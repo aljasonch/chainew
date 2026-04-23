@@ -51,7 +51,7 @@ const ArticleSchema = new Schema<IArticle>(
         },
         content_mdx: {
             type: String,
-            required: [true, "Content is required"],
+            default: "",
         },
         content_html: {
             type: String,
@@ -82,6 +82,15 @@ const ArticleSchema = new Schema<IArticle>(
             type: Number,
             default: 0,
         },
+        source: {
+            type: String,
+            enum: ["neurafeed", "manual"],
+            default: "manual",
+        },
+        neuraFeedId: {
+            type: String,
+            sparse: true,
+        },
     },
     {
         timestamps: true,
@@ -93,6 +102,12 @@ ArticleSchema.index({ status: 1, publishedAt: -1 });
 ArticleSchema.index({ category: 1 });
 ArticleSchema.index({ tags: 1 });
 ArticleSchema.index({ authorId: 1 });
+ArticleSchema.index({ neuraFeedId: 1 }, { sparse: true, unique: true });
+
+// Force recompile during dev to clear old schema caches
+if (process.env.NODE_ENV !== "production") {
+    delete mongoose.models.Article;
+}
 
 const Article: Model<IArticle> =
     mongoose.models.Article || mongoose.model<IArticle>("Article", ArticleSchema);

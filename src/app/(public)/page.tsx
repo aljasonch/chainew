@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
-import { ArrowUpRight, Zap, Sparkles, Cpu, DollarSign, Coins, Building2, Newspaper } from "lucide-react";
+import { NeuraFeedBadge } from "@/components/ui/NeuraFeedBadge";
+import { ArrowUpRight, Zap, Sparkles, Cpu, DollarSign, Coins, Building2, Newspaper, BookOpen, Radio } from "lucide-react";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
 import "@/models/User";
@@ -24,7 +25,7 @@ const categories = [
 async function getHomePageData() {
   await dbConnect();
 
-  const [featuredArticles, latestArticles, categoryCounts] = await Promise.all([
+  const [featuredArticles, latestArticles, categoryCounts, neuraFeedArticle] = await Promise.all([
     Article.find({ status: "published" })
       .populate("authorId", "name")
       .sort({ publishedAt: -1 })
@@ -39,6 +40,9 @@ async function getHomePageData() {
       { $match: { status: "published" } },
       { $group: { _id: "$category", count: { $sum: 1 } } },
     ]),
+    Article.findOne({ status: "published", source: "neurafeed" })
+      .sort({ publishedAt: -1 })
+      .lean(),
   ]);
 
   const countMap = Object.fromEntries(
@@ -49,11 +53,12 @@ async function getHomePageData() {
     featuredArticles: JSON.parse(JSON.stringify(featuredArticles)),
     latestArticles: JSON.parse(JSON.stringify(latestArticles)),
     categoryCounts: countMap,
+    neuraFeedArticle: neuraFeedArticle ? JSON.parse(JSON.stringify(neuraFeedArticle)) : null,
   };
 }
 
 export default async function HomePage() {
-  const { featuredArticles, latestArticles, categoryCounts } = await getHomePageData();
+  const { featuredArticles, latestArticles, categoryCounts, neuraFeedArticle } = await getHomePageData();
   const hasArticles = featuredArticles.length > 0;
 
   return (
@@ -131,6 +136,84 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* NeuraFeed AI Briefing */}
+      {neuraFeedArticle && (
+        <section className="max-w-7xl mx-auto px-4 py-8">
+          <div className="relative overflow-hidden rounded-3xl bg-primary border border-cyan-500/20 p-6 md:p-8">
+            {/* Background glow */}
+            <div className="absolute top-0 right-0 w-72 h-72 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="relative flex flex-col md:flex-row md:items-start gap-6">
+              {/* Left: content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-4">
+                  <NeuraFeedBadge size="md" />
+                  <span className="flex items-center gap-1.5 text-xs text-cyan-400/80">
+                    <Radio size={10} className="animate-pulse" />
+                    Today&apos;s AI Briefing
+                  </span>
+                  {neuraFeedArticle.tags?.[0] && (
+                    <Badge variant="accent" className="text-xs">
+                      {neuraFeedArticle.category}
+                    </Badge>
+                  )}
+                </div>
+
+                <Link href={`/article/${neuraFeedArticle.slug}`}>
+                  <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-inverse mb-3 leading-tight hover:text-cyan-300 transition-colors line-clamp-3">
+                    {neuraFeedArticle.title}
+                  </h2>
+                </Link>
+
+                <p className="text-muted text-sm md:text-base line-clamp-3 mb-4">
+                  {neuraFeedArticle.summary}
+                </p>
+
+                {neuraFeedArticle.subtitle && (
+                  <div className="flex items-start gap-2 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 mb-5">
+                    <Zap size={14} className="text-cyan-400 mt-0.5 shrink-0" />
+                    <p className="text-xs text-cyan-300/90 line-clamp-2">
+                      <span className="font-semibold">Why it matters: </span>
+                      {neuraFeedArticle.subtitle}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-4">
+                  <Link
+                    href={`/article/${neuraFeedArticle.slug}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500 text-white text-sm font-semibold hover:bg-cyan-400 transition-colors group"
+                  >
+                    <BookOpen size={14} />
+                    Read Full Briefing
+                    <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </Link>
+                  {neuraFeedArticle.sources?.length > 0 && (
+                    <span className="text-xs text-muted">
+                      {neuraFeedArticle.sources.length} source{neuraFeedArticle.sources.length !== 1 ? "s" : ""} cited
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Right: topic pill */}
+              <div className="md:shrink-0 md:w-48 flex md:flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20">
+                <Zap size={28} className="text-cyan-400" />
+                <div className="text-center">
+                  <p className="text-xs text-cyan-400/60 uppercase tracking-widest mb-1">Topic</p>
+                  <p className="text-sm font-bold text-inverse leading-tight">
+                    {neuraFeedArticle.tags?.[0]
+                      ?.replace(/-/g, " ")
+                      .replace(/\b\w/g, (c: string) => c.toUpperCase()) ?? neuraFeedArticle.category}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {featuredArticles.length > 1 && (
         <section className="max-w-7xl mx-auto px-4 py-8">

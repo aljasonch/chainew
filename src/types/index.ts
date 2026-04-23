@@ -45,6 +45,10 @@ export interface IArticle {
     seo: IArticleSeo;
     publishedAt?: Date;
     views?: number;
+    /** "neurafeed" = imported from NeuraFeed; "manual" = editor-created */
+    source?: "neurafeed" | "manual";
+    /** NeuraFeed Firestore document ID — used for deduplication */
+    neuraFeedId?: string;
     createdAt: Date;
     updatedAt: Date;
 }

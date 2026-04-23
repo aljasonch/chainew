@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
         const status = searchParams.get("status");
         const category = searchParams.get("category");
         const search = searchParams.get("search");
+        const source = searchParams.get("source");
 
         const query: Record<string, unknown> = {};
 
@@ -25,6 +26,10 @@ export async function GET(request: NextRequest) {
 
         if (category) {
             query.category = category;
+        }
+
+        if (source) {
+            query.source = source;
         }
 
         if (search) {
