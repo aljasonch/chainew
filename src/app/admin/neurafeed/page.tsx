@@ -45,11 +45,10 @@ export default function NeuraFeedAdminPage() {
     const [loadingLive, setLoadingLive] = useState(true);
     const [loadingImported, setLoadingImported] = useState(true);
 
-    // Fetch live NeuraFeed article
     const fetchLive = useCallback(async () => {
         setLoadingLive(true);
         try {
-            const res = await fetch("https://neurafeed.vercel.app/api/latest-news");
+            const res = await fetch("/api/neurafeed/latest");
             const data = await res.json();
             setLiveArticle(data.article ?? null);
         } catch {
@@ -94,8 +93,8 @@ export default function NeuraFeedAdminPage() {
         setIsSyncing(true);
         setSyncResult(null);
         try {
-            // 1. Manually check if there is new latest news
-            const resLive = await fetch("https://neurafeed.vercel.app/api/latest-news");
+            // 1. Check live article via proxy (server-side, no CORS)
+            const resLive = await fetch("/api/neurafeed/latest");
             const dataLive = await resLive.json();
             const liveId = dataLive.article?.id;
 
@@ -105,11 +104,11 @@ export default function NeuraFeedAdminPage() {
 
             // 2. If there is none, just give visual feedback
             if (liveId && localId && liveId === localId) {
-                setSyncResult({ 
-                    success: true, 
-                    synced: false, 
-                    reason: "already_imported", 
-                    message: "No new articles found. Everything is up to date." 
+                setSyncResult({
+                    success: true,
+                    synced: false,
+                    reason: "already_imported",
+                    message: "No new articles found. Everything is up to date."
                 });
                 setIsSyncing(false);
                 return;
@@ -159,13 +158,12 @@ export default function NeuraFeedAdminPage() {
 
             {/* Sync result banner */}
             {syncResult && (
-                <div className={`flex items-start gap-3 p-4 rounded-xl border text-sm ${
-                    !syncResult.success
+                <div className={`flex items-start gap-3 p-4 rounded-xl border text-sm ${!syncResult.success
                         ? "bg-red-50 border-red-200 text-red-700"
                         : syncResult.synced
-                        ? "bg-green-50 border-green-200 text-green-700"
-                        : "bg-zinc-50 border-zinc-200 text-zinc-600"
-                }`}>
+                            ? "bg-green-50 border-green-200 text-green-700"
+                            : "bg-zinc-50 border-zinc-200 text-zinc-600"
+                    }`}>
                     {!syncResult.success ? (
                         <XCircle size={16} className="mt-0.5 shrink-0" />
                     ) : syncResult.synced ? (
