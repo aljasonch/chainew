@@ -21,6 +21,7 @@ import {
     detectCategory,
     parseNeuraFeedSources,
     buildSlug,
+    sanitizeNeuraFeedHtml,
 } from "@/lib/neurafeed";
 
 // ──────────────────────────────────────────────
@@ -135,8 +136,8 @@ export async function POST(request: NextRequest) {
     const category = detectCategory(nfArticle.topic, nfArticle.title);
     const slug = buildSlug(nfArticle.title, nfArticle.createdAt);
     const sources = parseNeuraFeedSources(nfArticle.sources);
-    // article field is HTML — store directly in content_html; leave content_mdx empty
-    const content_html = nfArticle.article;
+    // article field is HTML — sanitize markdown residue, then store in content_html
+    const content_html = sanitizeNeuraFeedHtml(nfArticle.article);
 
     const articleData = {
         title: nfArticle.title,

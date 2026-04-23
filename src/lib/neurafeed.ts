@@ -80,7 +80,6 @@ export function detectCategory(topic: string, title: string): string {
 export function parseNeuraFeedSources(
     sources: string[]
 ): { name: string; url: string }[] {
-    // Regex: optional [N] prefix, then "Name: URL"
     const numberedRe = /^\[\d+\]\s+(.+?):\s*(https?:\/\/\S+)/;
     const plainRe = /^(.+?):\s*(https?:\/\/\S+)/;
 
@@ -96,13 +95,6 @@ export function parseNeuraFeedSources(
         .filter(Boolean) as { name: string; url: string }[];
 }
 
-// ──────────────────────────────────────────────
-// Slug generator
-// ──────────────────────────────────────────────
-/**
- * Creates a URL-safe slug from a title, appending a YYYYMMDD suffix
- * so re-runs on the same day never conflict.
- */
 export function buildSlug(title: string, createdAt: string): string {
     const dateSuffix = new Date(createdAt)
         .toISOString()
@@ -121,6 +113,21 @@ export function buildSlug(title: string, createdAt: string): string {
 }
 
 // ──────────────────────────────────────────────
-// Note: article body is now HTML — store as-is in content_html.
-// No conversion needed.
+// HTML sanitizer
 // ──────────────────────────────────────────────
+
+/**
+ * Converts residual markdown-style inline formatting to HTML.
+ * NeuraFeed's LLM occasionally outputs **bold** or *italic* inside <p> tags
+ * instead of <strong>/<em>. Run this before storing or rendering content.
+ *
+ *   **text** → <strong>text</strong>
+ *   *text*   → <em>text</em>
+ */
+export function sanitizeNeuraFeedHtml(html: string): string {
+    return html
+        // Double asterisk → bold (must run before single)
+        .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
+        // Single asterisk → italic
+        .replace(/(?<!\*)\*(?!\*)([^*\n]+)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
+}
