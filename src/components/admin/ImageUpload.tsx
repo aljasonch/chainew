@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
     value?: string;
-    onChange: (url: string) => void;
+    onChange: (value: { url: string; publicId?: string }) => void;
     className?: string;
 }
 
@@ -40,20 +40,53 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
         setIsUploading(true);
 
         try {
+            const signRes = await fetch("/api/upload/sign", {
+                method: "POST",
+            });
+
+            if (!signRes.ok) {
+                throw new Error("Failed to get upload signature");
+            }
+
+            const signPayload = await signRes.json();
+            const signData = signPayload?.data as
+                | {
+                    timestamp: number;
+                    signature: string;
+                    uploadPreset: string;
+                    cloudName: string;
+                    apiKey: string;
+                }
+                | undefined;
+
+            if (!signPayload?.success || !signData) {
+                throw new Error("Invalid upload signature response");
+            }
+
             const formData = new FormData();
             formData.append("file", file);
+            formData.append("api_key", signData.apiKey);
+            formData.append("timestamp", String(signData.timestamp));
+            formData.append("signature", signData.signature);
+            formData.append("upload_preset", signData.uploadPreset);
 
-            const res = await fetch("/api/upload", {
+            const res = await fetch(
+                `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`,
+                {
                 method: "POST",
                 body: formData,
-            });
+                }
+            );
 
             if (!res.ok) {
                 throw new Error("Upload failed");
             }
 
             const data = await res.json();
-            onChange(data.url);
+            onChange({
+                url: data.secure_url,
+                publicId: data.public_id,
+            });
         } catch {
             setError("Failed to upload image");
         } finally {
@@ -83,7 +116,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
     };
 
     const handleRemove = () => {
-        onChange("");
+        onChange({ url: "", publicId: "" });
     };
 
     return (

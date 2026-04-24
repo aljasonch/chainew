@@ -1,41 +1,27 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import dbConnect from "@/lib/db";
-import Article from "@/models/Article";
-import "@/models/User";
 import { Badge } from "@/components/ui/Badge";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { formatDate, getBaseUrl } from "@/lib/utils";
 import { ArrowLeft, Eye } from "lucide-react";
 import { headers } from "next/headers";
-import View from "@/models/View";
 import { compileMDX } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { mdxComponents } from "@/components/markdown/components";
 import { sanitizeNeuraFeedHtml } from "@/lib/neurafeed";
+import { getArticleBySlug, trackArticleView as trackFirestoreArticleView } from "@/lib/firestore";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
 async function getArticle(slug: string) {
-    await dbConnect();
-
-    const article = await Article.findOne({
-        slug,
-        status: "published",
-    })
-        .populate("authorId", "name email")
-        .lean();
-
-    return article;
+    return getArticleBySlug(slug, "published");
 }
 
-async function trackArticleView(articleId: string): Promise<number | null> {
+async function trackArticleViewByRequest(articleId: string): Promise<number | null> {
     try {
-        await dbConnect();
-
         const headersList = await headers();
         let ip = headersList.get("x-forwarded-for");
         if (!ip) {
@@ -46,21 +32,8 @@ async function trackArticleView(articleId: string): Promise<number | null> {
         }
         const finalIp = ip.split(",")[0].trim();
 
-        await View.create({ articleId, ip: finalIp });
-
-        const updatedArticle = await Article.findByIdAndUpdate(
-            articleId,
-            { $inc: { views: 1 } },
-            { new: true, select: 'views' }
-        );
-        
-        return updatedArticle?.views ?? null;
+        return await trackFirestoreArticleView(articleId, finalIp);
     } catch (error: unknown) {
-        if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-            await dbConnect();
-            const currentArticle = await Article.findById(articleId).select('views');
-            return currentArticle?.views ?? null;
-        }
         console.error("Error tracking article view:", error);
         return null;
     }
@@ -120,7 +93,7 @@ export default async function ArticlePage({ params }: PageProps) {
     }
 
     // Track view and get updated view count
-    const updatedViewCount = await trackArticleView(article._id.toString());
+    const updatedViewCount = await trackArticleViewByRequest(article._id);
     if (updatedViewCount !== null) {
         article.views = updatedViewCount;
     }

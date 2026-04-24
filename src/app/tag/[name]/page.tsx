@@ -1,7 +1,5 @@
 import { Metadata } from "next";
-import dbConnect from "@/lib/db";
-import Article from "@/models/Article";
-import "@/models/User";
+import { listPublishedByTag } from "@/lib/firestore";
 import { ArticleCard } from "@/components/ArticleCard";
 
 interface PageProps {
@@ -9,18 +7,7 @@ interface PageProps {
 }
 
 async function getArticlesByTag(tag: string) {
-    await dbConnect();
-
-    const articles = await Article.find({
-        status: "published",
-        tags: { $in: [new RegExp(`^${tag}$`, "i")] },
-    })
-        .populate("authorId", "name")
-        .sort({ publishedAt: -1 })
-        .limit(50)
-        .lean();
-
-    return articles;
+    return listPublishedByTag(tag);
 }
 
 export async function generateMetadata({

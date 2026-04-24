@@ -1,25 +1,16 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
-import Article from "@/models/Article";
+import { listPublishedForNewsSitemap } from "@/lib/firestore";
 
 export const dynamic = "force-dynamic";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export async function GET() {
-    await dbConnect();
-
     // Get articles published in the last 2 days (Google News requirement)
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
-    const articles = await Article.find({
-        status: "published",
-        publishedAt: { $gte: twoDaysAgo },
-    })
-        .select("title slug publishedAt")
-        .sort({ publishedAt: -1 })
-        .lean();
+    const articles = await listPublishedForNewsSitemap(twoDaysAgo);
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"

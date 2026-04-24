@@ -1,15 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
-import dbConnect from "@/lib/db";
+import { auth } from "@/app/api/auth/session/route";
 import { sendDiscordPublishNotification } from "@/lib/discord";
-import Article from "@/models/Article";
-import "@/models/User";
-import Revision from "@/models/Revision";
+import {
+    createArticle,
+    createRevision,
+    listArticles,
+    updateArticle,
+} from "@/lib/firestore";
+
+function asStatusCode(error: unknown): number {
+    if (error && typeof error === "object" && "code" in error) {
+        const code = String((error as { code: string }).code);
+        if (code === "not-found") {
+            return 404;
+        }
+        if (code === "already-exists") {
+            return 400;
+        }
+    }
+    return 500;
+}
 
 export async function GET(request: NextRequest) {
     try {
-        await dbConnect();
-
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get("page") || "1");
         const limit = parseInt(searchParams.get("limit") || "10");
@@ -18,39 +31,21 @@ export async function GET(request: NextRequest) {
         const search = searchParams.get("search");
         const source = searchParams.get("source");
 
-        const query: Record<string, unknown> = {};
-
-        if (status) {
-            query.status = status;
-        }
-
-        if (category) {
-            query.category = category;
-        }
-
-        if (source) {
-            query.source = source;
-        }
-
-        if (search) {
-            query.$or = [
-                { title: { $regex: search, $options: "i" } },
-                { summary: { $regex: search, $options: "i" } },
-            ];
-        }
-
-        const total = await Article.countDocuments(query);
-        const articles = await Article.find(query)
-            .populate("authorId", "name email")
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .lean();
+        const { items, total } = await listArticles({
+            page,
+            limit,
+            status,
+            category,
+            source,
+            search,
+            orderBy: "createdAt",
+            orderDirection: "desc",
+        });
 
         return NextResponse.json({
             success: true,
             data: {
-                items: articles,
+                items,
                 total,
                 page,
                 limit,
@@ -77,19 +72,27 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        await dbConnect();
-
         const body = await request.json();
 
-        // Set author from session
-        body.authorId = session.user.id;
-
-        // Set publishedAt if status is published
-        if (body.status === "published" && !body.publishedAt) {
-            body.publishedAt = new Date();
-        }
-
-        const [article] = await Article.create([body]);
+        const article = await createArticle({
+            title: body.title,
+            slug: body.slug,
+            subtitle: body.subtitle,
+            summary: body.summary,
+            category: body.category,
+            tags: body.tags,
+            content_mdx: body.content_mdx,
+            content_html: body.content_html,
+            status: body.status,
+            authorId: session.user.id,
+            authorName: session.user.name,
+            authorEmail: session.user.email ?? "",
+            sources: body.sources,
+            seo: body.seo,
+            publishedAt: body.publishedAt,
+            source: body.source,
+            neuraFeedId: body.neuraFeedId,
+        });
 
         // Auto publish to Discord if article is published
         if (article.status === "published") {
@@ -114,7 +117,7 @@ export async function POST(request: NextRequest) {
         console.error("Error creating article:", error);
         return NextResponse.json(
             { success: false, error: "Failed to create article" },
-            { status: 500 }
+            { status: asStatusCode(error) }
         );
     }
 }
@@ -130,65 +133,52 @@ export async function PUT(request: NextRequest) {
             );
         }
 
-        await dbConnect();
-
         const body = await request.json();
         const { id, ...updateData } = body;
 
-        const existingArticle = await Article.findById(id);
-
-        if (!existingArticle) {
+        if (!id || typeof id !== "string") {
             return NextResponse.json(
-                { success: false, error: "Article not found" },
-                { status: 404 }
+                { success: false, error: "Article ID is required" },
+                { status: 400 }
             );
         }
 
-        const wasPublished = existingArticle.status === "published";
+        const { previous, current } = await updateArticle(id, {
+            ...updateData,
+            publishedAt:
+                updateData.status === "published" && previousPublishedAtFallback(updateData)
+                    ? new Date()
+                    : updateData.publishedAt,
+        });
 
-        // Track changes for revision
+        const wasPublished = previous.status === "published";
+
         const changes: Record<string, { old: unknown; new: unknown }> = {};
         for (const key of Object.keys(updateData)) {
-            if (
-                JSON.stringify(existingArticle[key as keyof typeof existingArticle]) !==
-                JSON.stringify(updateData[key])
-            ) {
-                changes[key] = {
-                    old: existingArticle[key as keyof typeof existingArticle],
-                    new: updateData[key],
-                };
+            const previousValue = (previous as unknown as Record<string, unknown>)[key];
+            const currentValue = (current as unknown as Record<string, unknown>)[key];
+            if (JSON.stringify(previousValue) !== JSON.stringify(currentValue)) {
+                changes[key] = { old: previousValue, new: currentValue };
             }
         }
 
-        // Set publishedAt if status changed to published
-        if (
-            updateData.status === "published" &&
-            existingArticle.status !== "published"
-        ) {
-            updateData.publishedAt = new Date();
-        }
-
-        const article = await Article.findByIdAndUpdate(id, updateData, {
-            new: true,
-        });
-
         // Auto publish to Discord if article just got published
-        if (article && article.status === "published" && !wasPublished) {
+        if (current.status === "published" && !wasPublished) {
             await sendDiscordPublishNotification({
-                title: article.title,
-                slug: article.slug,
-                summary: article.summary,
-                category: article.category,
-                tags: article.tags,
-                ogImageUrl: article.seo?.ogImageUrl,
-                publishedAt: article.publishedAt,
+                title: current.title,
+                slug: current.slug,
+                summary: current.summary,
+                category: current.category,
+                tags: current.tags,
+                ogImageUrl: current.seo?.ogImageUrl,
+                publishedAt: current.publishedAt,
                 authorName: session.user.name,
             });
         }
 
         // Create revision if there are changes
         if (Object.keys(changes).length > 0) {
-            await Revision.create({
+            await createRevision({
                 articleId: id,
                 userId: session.user.id,
                 changes,
@@ -197,14 +187,18 @@ export async function PUT(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            data: article,
+            data: current,
             message: "Article updated successfully",
         });
     } catch (error) {
         console.error("Error updating article:", error);
         return NextResponse.json(
             { success: false, error: "Failed to update article" },
-            { status: 500 }
+            { status: asStatusCode(error) }
         );
     }
+}
+
+function previousPublishedAtFallback(updateData: Record<string, unknown>): boolean {
+    return updateData.status === "published" && !updateData.publishedAt;
 }

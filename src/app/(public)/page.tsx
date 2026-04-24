@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
-import { NeuraFeedBadge } from "@/components/ui/NeuraFeedBadge";
-import { ArrowUpRight, Sparkles, Cpu, DollarSign, Coins, Building2, Newspaper, BookOpen, Radio } from "lucide-react";
-import dbConnect from "@/lib/db";
-import Article from "@/models/Article";
-import "@/models/User";
+import { ArrowUpRight, Sparkles, Cpu, DollarSign, Coins, Building2, Newspaper } from "lucide-react";
+import { getHomePageData as getFirestoreHomePageData } from "@/lib/firestore";
 
 export const dynamic = "force-dynamic";
 
@@ -23,42 +20,18 @@ const categories = [
 ];
 
 async function getHomePageData() {
-  await dbConnect();
-
-  const [featuredArticles, latestArticles, categoryCounts, neuraFeedArticle] = await Promise.all([
-    Article.find({ status: "published" })
-      .populate("authorId", "name")
-      .sort({ publishedAt: -1 })
-      .limit(4)
-      .lean(),
-    Article.find({ status: "published" })
-      .populate("authorId", "name")
-      .sort({ publishedAt: -1 })
-      .limit(4)
-      .lean(),
-    Article.aggregate([
-      { $match: { status: "published" } },
-      { $group: { _id: "$category", count: { $sum: 1 } } },
-    ]),
-    Article.findOne({ status: "published", source: "neurafeed" })
-      .sort({ publishedAt: -1 })
-      .lean(),
-  ]);
-
-  const countMap = Object.fromEntries(
-    categoryCounts.map((c: { _id: string; count: number }) => [c._id, c.count])
-  );
+  const { featuredArticles, latestArticles, categoryCounts } =
+    await getFirestoreHomePageData();
 
   return {
-    featuredArticles: JSON.parse(JSON.stringify(featuredArticles)),
-    latestArticles: JSON.parse(JSON.stringify(latestArticles)),
-    categoryCounts: countMap,
-    neuraFeedArticle: neuraFeedArticle ? JSON.parse(JSON.stringify(neuraFeedArticle)) : null,
+    featuredArticles,
+    latestArticles,
+    categoryCounts,
   };
 }
 
 export default async function HomePage() {
-  const { featuredArticles, latestArticles, categoryCounts, neuraFeedArticle } = await getHomePageData();
+  const { featuredArticles, latestArticles, categoryCounts } = await getHomePageData();
   const hasArticles = featuredArticles.length > 0;
 
   return (

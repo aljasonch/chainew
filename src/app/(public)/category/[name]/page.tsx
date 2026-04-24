@@ -1,7 +1,5 @@
 import { Metadata } from "next";
-import dbConnect from "@/lib/db";
-import Article from "@/models/Article";
-import "@/models/User";
+import { listPublishedByCategory } from "@/lib/firestore";
 import { ArticleCard } from "@/components/ArticleCard";
 
 interface PageProps {
@@ -16,18 +14,8 @@ const categoryMapping: Record<string, string> = {
 };
 
 async function getArticlesByCategory(slug: string) {
-    await dbConnect();
-
     const categoryName = categoryMapping[slug.toLowerCase()] || decodeURIComponent(slug);
-
-    const articles = await Article.find({
-        status: "published",
-        category: { $regex: new RegExp(`^${categoryName}$`, "i") },
-    })
-        .populate("authorId", "name")
-        .sort({ publishedAt: -1 })
-        .limit(50)
-        .lean();
+    const articles = await listPublishedByCategory(categoryName);
 
     return { articles, categoryName };
 }

@@ -2,41 +2,17 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Pagination } from "@/components/ui/Pagination";
 import { Clock, ArrowRight, Newspaper, ArrowUpRight } from "lucide-react";
-import dbConnect from "@/lib/db";
-import Article from "@/models/Article";
-import "@/models/User";
+import { listPublishedForLatest } from "@/lib/firestore";
 import { formatDateShort } from "@/lib/utils";
+import { IArticle } from "@/types";
 
 const ITEMS_PER_PAGE = 10;
 
-interface ArticleType {
-    _id: string;
-    slug: string;
-    category: string;
-    publishedAt?: string;
-    title: string;
-    summary: string;
-    authorId?: { name?: string };
-    seo?: { ogImageUrl?: string };
-}
-
 async function getLatestArticles(page: number) {
-    await dbConnect();
-
-    const skip = (page - 1) * ITEMS_PER_PAGE;
-
-    const [articles, total] = await Promise.all([
-        Article.find({ status: "published" })
-            .populate("authorId", "name")
-            .sort({ publishedAt: -1 })
-            .skip(skip)
-            .limit(ITEMS_PER_PAGE)
-            .lean(),
-        Article.countDocuments({ status: "published" })
-    ]);
+    const { items: articles, total } = await listPublishedForLatest(page, ITEMS_PER_PAGE);
 
     return {
-        articles: JSON.parse(JSON.stringify(articles)),
+        articles,
         total,
         totalPages: Math.max(1, Math.ceil(total / ITEMS_PER_PAGE))
     };
@@ -46,13 +22,25 @@ interface LatestPageProps {
     searchParams: Promise<{ page?: string }>;
 }
 
+function getArticleAuthorName(article: IArticle): string {
+    if (article.authorId && typeof article.authorId === "object" && article.authorId.name) {
+        return article.authorId.name;
+    }
+
+    if (article.authorName) {
+        return article.authorName;
+    }
+
+    return "Chainew";
+}
+
 export default async function LatestPage({ searchParams }: LatestPageProps) {
     const params = await searchParams;
     const currentPage = Math.max(1, parseInt(params.page || "1") || 1);
     const { articles, totalPages } = await getLatestArticles(currentPage);
 
-    let featuredArticle: ArticleType | undefined;
-    let remainingArticles: ArticleType[];
+    let featuredArticle: IArticle | undefined;
+    let remainingArticles: IArticle[];
     if (currentPage === 1 && articles.length > 1) {
         featuredArticle = articles[0];
         remainingArticles = articles.slice(1);
@@ -116,7 +104,7 @@ export default async function LatestPage({ searchParams }: LatestPageProps) {
 
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-muted">
-                                                By <span className="text-inverse font-medium">{featuredArticle.authorId?.name || 'Chainew'}</span>
+                                                By <span className="text-inverse font-medium">{getArticleAuthorName(featuredArticle)}</span>
                                             </span>
                                             <span className="flex items-center gap-2 text-[var(--color-muted)] hover:text-[var(--color-text-muted)] group-hover:translate-x-1 transition-transform">
                                                 Read Full Story
@@ -129,7 +117,7 @@ export default async function LatestPage({ searchParams }: LatestPageProps) {
                         )}
 
                         <div className="space-y-6">
-                            {(currentPage === 1 ? remainingArticles : articles).map((article: ArticleType, index: number) => (
+                            {(currentPage === 1 ? remainingArticles : articles).map((article: IArticle, index: number) => (
                                 <Link
                                     key={article._id}
                                     href={`/article/${article.slug}`}
@@ -158,7 +146,7 @@ export default async function LatestPage({ searchParams }: LatestPageProps) {
 
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm text-secondary">
-                                                    By <span className="text-primary font-medium">{article.authorId?.name || 'Chainew'}</span>
+                                                    By <span className="text-primary font-medium">{getArticleAuthorName(article)}</span>
                                                 </span>
                                             </div>
                                         </div>
