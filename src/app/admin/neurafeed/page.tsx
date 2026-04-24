@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Zap, RefreshCw, CheckCircle2, XCircle, Clock, ExternalLink, AlertCircle, Newspaper } from "lucide-react";
+import { Radio, RefreshCw, CheckCircle2, XCircle, Clock, ExternalLink, AlertCircle, Newspaper } from "lucide-react";
 import { NeuraFeedBadge } from "@/components/ui/NeuraFeedBadge";
 import Link from "next/link";
 
@@ -134,13 +134,10 @@ export default function NeuraFeedAdminPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
-                        <Zap size={20} className="text-cyan-500" />
-                    </div>
+
                     <div>
                         <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
                             NeuraFeed
-                            <NeuraFeedBadge size="md" />
                         </h1>
                         <p className="text-zinc-500 text-sm">AI-powered news feed integration</p>
                     </div>
@@ -159,10 +156,10 @@ export default function NeuraFeedAdminPage() {
             {/* Sync result banner */}
             {syncResult && (
                 <div className={`flex items-start gap-3 p-4 rounded-xl border text-sm ${!syncResult.success
-                        ? "bg-red-50 border-red-200 text-red-700"
-                        : syncResult.synced
-                            ? "bg-green-50 border-green-200 text-green-700"
-                            : "bg-zinc-50 border-zinc-200 text-zinc-600"
+                    ? "bg-red-50 border-red-200 text-red-700"
+                    : syncResult.synced
+                        ? "bg-green-50 border-green-200 text-green-700"
+                        : "bg-zinc-50 border-zinc-200 text-zinc-600"
                     }`}>
                     {!syncResult.success ? (
                         <XCircle size={16} className="mt-0.5 shrink-0" />
@@ -283,7 +280,7 @@ export default function NeuraFeedAdminPage() {
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-zinc-500">NeuraFeed endpoint</span>
                             <a
-                                href="https://neurafeed.vercel.app/api/latest-news"
+                                href="https://feed.neuraspheres.com/api/latest-news"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-xs text-cyan-600 hover:underline flex items-center gap-1"
@@ -319,7 +316,7 @@ export default function NeuraFeedAdminPage() {
                     </div>
                 ) : importedArticles.length === 0 ? (
                     <div className="p-8 text-center">
-                        <Zap size={32} className="text-zinc-200 mx-auto mb-3" />
+                        <Radio size={32} className="text-zinc-200 mx-auto mb-3" />
                         <p className="text-zinc-400 text-sm">No NeuraFeed articles imported yet.</p>
                         <p className="text-zinc-300 text-xs mt-1">Click &ldquo;Check for Updates&rdquo; to pull the latest article.</p>
                     </div>

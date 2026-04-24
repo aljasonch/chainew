@@ -15,7 +15,7 @@ import {
     Menu,
     X,
     ChevronRight,
-    Zap,
+    Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +25,7 @@ const navItems = [
     { href: "/admin/sources", label: "Sources", icon: Link2 },
     { href: "/admin/review", label: "Review Queue", icon: ClipboardCheck },
     { href: "/admin/revisions", label: "Revisions", icon: History },
-    { href: "/admin/neurafeed", label: "NeuraFeed", icon: Zap, adminOnly: true },
+    { href: "/admin/neurafeed", label: "NeuraFeed", icon: Radio, adminOnly: true },
     { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
 ];
 

@@ -5,7 +5,6 @@ import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
 import "@/models/User";
 import { Badge } from "@/components/ui/Badge";
-import { NeuraFeedBadge } from "@/components/ui/NeuraFeedBadge";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { formatDate, getBaseUrl } from "@/lib/utils";
 import { ArrowLeft, Eye } from "lucide-react";
@@ -187,9 +186,6 @@ export default async function ArticlePage({ params }: PageProps) {
 
                     <p className="text-zinc-500 flex items-center gap-2">
                         By {authorName}
-                        {(article as unknown as { source?: string }).source === "neurafeed" && (
-                            <NeuraFeedBadge size="md" />
-                        )}
                     </p>
                 </header>
 
