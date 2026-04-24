@@ -1,21 +1,23 @@
 /**
  * POST /api/neurafeed/sync
  *
- * Pulls the latest article from NeuraFeed, imports it into MongoDB if it's
+ * Pulls the latest article from NeuraFeed, imports it into Firestore if it's
  * new, and broadcasts to Discord. Called by Vercel Cron (00:30 UTC daily)
- * and also by the admin "Sync Now" button (via NextAuth session).
+ * and also by the admin "Sync Now" button (via Firebase session cookie).
  *
  * Auth:
  *   - Vercel Cron: Authorization: Bearer <CRON_SECRET>
- *   - Admin manual: valid NextAuth session with role "admin"
+ *   - Admin manual: valid Firebase session cookie with role "admin"
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
-import dbConnect from "@/lib/db";
-import Article from "@/models/Article";
-import User from "@/models/User";
 import { sendDiscordPublishNotification } from "@/lib/discord";
+import {
+    createArticle,
+    findArticleByNeuraFeedId,
+    getLatestNeuraFeedImport,
+    getOrCreateNeuraFeedUser,
+} from "@/lib/firestore";
 import {
     fetchLatestNeuraFeedArticle,
     detectCategory,
@@ -23,24 +25,7 @@ import {
     buildSlug,
     sanitizeNeuraFeedHtml,
 } from "@/lib/neurafeed";
-
-// ──────────────────────────────────────────────
-// NeuraFeed "Bot" user — created once, reused on every import
-// ──────────────────────────────────────────────
-
-async function getOrCreateNeuraFeedUser(): Promise<string> {
-    const existing = await User.findOne({ email: "neurafeed@chainew.bot" }).lean();
-    if (existing) return String(existing._id);
-
-    const created = await User.create({
-        email: "neurafeed@chainew.bot",
-        name: "NeuraFeed",
-        passwordHash: "!", // unusable — this account never logs in
-        role: "author",
-    });
-
-    return String(created._id);
-}
+import { auth } from "@/app/api/auth/session/route";
 
 // ──────────────────────────────────────────────
 // Auth guard
@@ -70,8 +55,6 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    await dbConnect();
-
     // 1. Fetch latest article from NeuraFeed
     const nfArticle = await fetchLatestNeuraFeedArticle();
     if (!nfArticle) {
@@ -99,10 +82,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Deduplication: compare the live article's ID against what we last imported.
     //    This avoids a full insert attempt when there is nothing new.
-    const lastImported = await Article.findOne({ source: "neurafeed" })
-        .sort({ publishedAt: -1 })
-        .select("neuraFeedId")
-        .lean() as { neuraFeedId?: string } | null;
+    const lastImported = await getLatestNeuraFeedImport();
 
     if (lastImported?.neuraFeedId && lastImported.neuraFeedId === nfArticle.id) {
         return NextResponse.json({
@@ -117,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     // 4. Secondary dedup: also check by neuraFeedId in case there are
     //    older articles with a matching ID that aren't the most recent.
-    const existingById = await Article.findOne({ neuraFeedId: nfArticle.id }).lean();
+    const existingById = await findArticleByNeuraFeedId(nfArticle.id);
     if (existingById) {
         return NextResponse.json({
             success: true,
@@ -130,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Get (or create) the NeuraFeed system user
-    const authorId = await getOrCreateNeuraFeedUser();
+    const author = await getOrCreateNeuraFeedUser();
 
     // 5. Transform NeuraFeed → Chainew article shape
     const category = detectCategory(nfArticle.topic, nfArticle.title);
@@ -139,42 +119,39 @@ export async function POST(request: NextRequest) {
     // article field is HTML — sanitize markdown residue, then store in content_html
     const content_html = sanitizeNeuraFeedHtml(nfArticle.article);
 
-    const articleData = {
-        title: nfArticle.title,
-        slug,
-        subtitle: nfArticle.whyItMatters,
-        summary: nfArticle.summary,
-        category,
-        tags: [
-            "neurafeed",
-            ...(nfArticle.tags || []).map((t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""))
-        ],
-        content_mdx: "",
-        content_html,
-        status: "published" as const,
-        authorId,
-        sources,
-        seo: {
-            metaTitle: nfArticle.title,
-            metaDescription: nfArticle.summary.slice(0, 160),
-        },
-        publishedAt: new Date(nfArticle.createdAt),
-        source: "neurafeed" as const,
-        neuraFeedId: nfArticle.id,
-    };
-
-    // 6. Insert into MongoDB
+    // 6. Insert into Firestore
     let article;
     try {
-        [article] = await Article.create([articleData]);
+        article = await createArticle({
+            title: nfArticle.title,
+            slug,
+            subtitle: nfArticle.whyItMatters,
+            summary: nfArticle.summary,
+            category,
+            tags: [
+                "neurafeed",
+                ...(nfArticle.tags || []).map((t: string) =>
+                    t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+                ),
+            ],
+            content_mdx: "",
+            content_html,
+            status: "published",
+            authorId: author._id,
+            authorName: author.name,
+            authorEmail: author.email,
+            sources,
+            seo: {
+                metaTitle: nfArticle.title,
+                metaDescription: nfArticle.summary.slice(0, 160),
+            },
+            publishedAt: new Date(nfArticle.createdAt),
+            source: "neurafeed",
+            neuraFeedId: nfArticle.id,
+        });
     } catch (err: unknown) {
-        // Handle duplicate key (race condition between two cron fires)
-        if (
-            err &&
-            typeof err === "object" &&
-            "code" in err &&
-            (err as { code: number }).code === 11000
-        ) {
+        // Handle duplicate import guard (race condition between two cron fires)
+        if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "already-exists") {
             return NextResponse.json({
                 success: true,
                 synced: false,
@@ -210,7 +187,7 @@ export async function POST(request: NextRequest) {
         {
             success: true,
             synced: true,
-            id: String(article._id),
+            id: article._id,
             slug: article.slug,
             topic: nfArticle.topic,
             category,
@@ -229,11 +206,7 @@ export async function GET(request: NextRequest) {
         }
     }
 
-    await dbConnect();
-    const last = await Article.findOne({ source: "neurafeed" })
-        .sort({ createdAt: -1 })
-        .select("title slug topic createdAt neuraFeedId")
-        .lean();
+    const last = await getLatestNeuraFeedImport();
 
     return NextResponse.json({ success: true, lastImport: last ?? null });
 }

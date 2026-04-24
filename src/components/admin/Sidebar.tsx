@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
+import { getAuth, signOut } from "firebase/auth";
 import {
     LayoutDashboard,
     FileText,
@@ -17,7 +17,21 @@ import {
     ChevronRight,
     Radio,
 } from "lucide-react";
+
+import { firebaseApp } from "@/lib/firebase";
 import { cn } from "@/lib/utils";
+
+interface SidebarUser {
+    id: string;
+    uid: string;
+    email: string;
+    name: string;
+    role: "admin" | "editor" | "author";
+}
+
+interface SidebarProps {
+    user: SidebarUser;
+}
 
 const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -29,14 +43,30 @@ const navItems = [
     { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
 ];
 
-export function Sidebar() {
+export function Sidebar({ user }: SidebarProps) {
     const pathname = usePathname();
-    const { data: session } = useSession();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [isSigningOut, setIsSigningOut] = useState(false);
 
     const filteredNavItems = navItems.filter(
-        (item) => !item.adminOnly || session?.user.role === "admin"
+        (item) => !item.adminOnly || user.role === "admin"
     );
+
+    const handleSignOut = async () => {
+        if (isSigningOut) {
+            return;
+        }
+
+        setIsSigningOut(true);
+
+        try {
+            await fetch("/api/auth/logout", { method: "POST" });
+        } finally {
+            const clientAuth = getAuth(firebaseApp);
+            await signOut(clientAuth).catch(() => undefined);
+            window.location.href = "/login";
+        }
+    };
 
     return (
         <>
@@ -122,23 +152,24 @@ export function Sidebar() {
                         <div
                             className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-accent text-inverse"
                         >
-                            {session?.user.name?.charAt(0).toUpperCase()}
+                            {user.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-primary truncate">
-                                {session?.user.name}
+                                {user.name}
                             </p>
                             <p className="text-xs text-accent capitalize">
-                                {session?.user.role}
+                                {user.role}
                             </p>
                         </div>
                     </div>
                     <button
-                        onClick={() => signOut({ callbackUrl: "/login" })}
+                        onClick={handleSignOut}
+                        disabled={isSigningOut}
                         className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors text-primary hover:bg-error-light hover:text-error"
                     >
                         <LogOut size={16} />
-                        Sign out
+                        {isSigningOut ? "Signing out..." : "Sign out"}
                     </button>
                 </div>
             </aside>
@@ -193,11 +224,12 @@ export function Sidebar() {
 
                 <div className="p-4 border-t border-default">
                     <button
-                        onClick={() => signOut({ callbackUrl: "/login" })}
+                        onClick={handleSignOut}
+                        disabled={isSigningOut}
                         className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors text-primary hover:bg-muted"
                     >
                         <LogOut size={16} />
-                        Sign out
+                        {isSigningOut ? "Signing out..." : "Sign out"}
                     </button>
                 </div>
             </aside>

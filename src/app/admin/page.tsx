@@ -1,8 +1,6 @@
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/app/api/auth/session/route";
 import { redirect } from "next/navigation";
-import dbConnect from "@/lib/db";
-import Article from "@/models/Article";
-import User from "@/models/User";
+import { getDashboardStats } from "@/lib/firestore";
 import { StatsCard } from "@/components/admin/StatsCard";
 import { FileText, Users, ClipboardCheck, Eye } from "lucide-react";
 import Link from "next/link";
@@ -10,33 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { formatDateShort } from "@/lib/utils";
 
 async function getStats() {
-    await dbConnect();
-
-    const [
-        totalArticles,
-        publishedArticles,
-        pendingReview,
-        totalUsers,
-        recentArticles,
-    ] = await Promise.all([
-        Article.countDocuments(),
-        Article.countDocuments({ status: "published" }),
-        Article.countDocuments({ status: "review" }),
-        User.countDocuments(),
-        Article.find()
-            .populate("authorId", "name")
-            .sort({ createdAt: -1 })
-            .limit(5)
-            .lean(),
-    ]);
-
-    return {
-        totalArticles,
-        publishedArticles,
-        pendingReview,
-        totalUsers,
-        recentArticles,
-    };
+    return getDashboardStats();
 }
 
 export default async function AdminDashboard() {

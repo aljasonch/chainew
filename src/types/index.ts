@@ -1,20 +1,24 @@
-import { Types } from "mongoose";
+export type UserRole = "admin" | "editor" | "author";
+export type ArticleStatus = "draft" | "review" | "published";
+export type ArticleOrigin = "neurafeed" | "manual";
 
 export interface IUser {
-    _id: Types.ObjectId;
+    _id: string;
     email: string;
     passwordHash: string;
     name: string;
-    role: "admin" | "editor" | "author";
+    role: UserRole;
     createdAt: Date;
     updatedAt: Date;
 }
 
 export interface ISource {
-    _id: Types.ObjectId;
+    _id: string;
     name: string;
     url: string;
     createdAt: Date;
+    updatedAt: Date;
+    searchTokens?: string[];
 }
 
 export interface IArticleSource {
@@ -26,10 +30,11 @@ export interface IArticleSeo {
     metaTitle: string;
     metaDescription: string;
     ogImageUrl?: string;
+    ogImagePublicId?: string;
 }
 
 export interface IArticle {
-    _id: Types.ObjectId;
+    _id: string;
     title: string;
     slug: string;
     subtitle?: string;
@@ -38,25 +43,28 @@ export interface IArticle {
     tags: string[];
     content_mdx: string;
     content_html: string;
-    status: "draft" | "review" | "published";
-    authorId: Types.ObjectId;
+    status: ArticleStatus;
+    authorId: string | { _id?: string; name?: string; email?: string };
     author?: IUser;
+    authorName?: string;
+    authorEmail?: string;
     sources: IArticleSource[];
     seo: IArticleSeo;
     publishedAt?: Date;
     views?: number;
-    /** "neurafeed" = imported from NeuraFeed; "manual" = editor-created */
-    source?: "neurafeed" | "manual";
-    /** NeuraFeed Firestore document ID — used for deduplication */
+    source?: ArticleOrigin;
     neuraFeedId?: string;
+    searchTokens?: string[];
+    categoryKey?: string;
+    tagsLower?: string[];
     createdAt: Date;
     updatedAt: Date;
 }
 
 export interface IRevision {
-    _id: Types.ObjectId;
-    articleId: Types.ObjectId;
-    userId: Types.ObjectId;
+    _id: string;
+    articleId: string | { _id?: string; title?: string; slug?: string };
+    userId: string | { _id?: string; name?: string; email?: string };
     user?: IUser;
     changes: Record<string, { old: unknown; new: unknown }>;
     createdAt: Date;
@@ -96,31 +104,17 @@ export interface UserFormData {
     email: string;
     name: string;
     password?: string;
-    role: "admin" | "editor" | "author";
+    role: UserRole;
 }
 
-// Session Types
-declare module "next-auth" {
-    interface Session {
-        user: {
-            id: string;
-            email: string;
-            name: string;
-            role: "admin" | "editor" | "author";
-        };
-    }
-
-    interface User {
-        id: string;
-        email: string;
-        name: string;
-        role: "admin" | "editor" | "author";
-    }
+export interface AuthSessionUser {
+    id: string;
+    uid: string;
+    email: string;
+    name: string;
+    role: UserRole;
 }
 
-declare module "next-auth/jwt" {
-    interface JWT {
-        id: string;
-        role: "admin" | "editor" | "author";
-    }
+export interface AuthSession {
+    user: AuthSessionUser;
 }
