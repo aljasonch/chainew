@@ -85,7 +85,7 @@ export function Sidebar() {
                 </div>
 
                 <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
-                    {filteredNavItems.map((item, index) => {
+                    {filteredNavItems.map((item) => {
                         const isActive =
                             pathname === item.href ||
                             (item.href !== "/admin" && pathname.startsWith(item.href));
@@ -96,18 +96,8 @@ export function Sidebar() {
                                 href={item.href}
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 group",
-                                    isActive ? "bg-primary text-inverse" : "text-primary"
+                                    isActive ? "bg-primary text-inverse shadow-sm" : "text-primary hover:bg-muted"
                                 )}
-                                onMouseEnter={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.background = 'var(--color-muted)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.background = 'transparent';
-                                    }
-                                }}
                             >
                                 <item.icon size={18} />
                                 <span className="flex-1">{item.label}</span>
