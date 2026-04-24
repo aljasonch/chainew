@@ -1,4 +1,4 @@
-const NEURAFEED_BASE = "https://neurafeed.vercel.app";
+const NEURAFEED_BASE = "https://feed.neuraspheres.com";
 
 export interface NeuraFeedArticle {
     id: string;
@@ -126,7 +126,14 @@ export function buildSlug(title: string, createdAt: string): string {
  *   *text*   → <em>text</em>
  */
 export function sanitizeNeuraFeedHtml(html: string): string {
-    return html
+    let sanitized = html;
+
+    // Remove accidental LLM prompt template leakage (e.g. "Title: ... Summary: ... Article: ")
+    // The LLM sometimes hallucinates its output format keys right into the start of the HTML.
+    const leakRegex = /^[\s\S]{0,100}?(?:\*\*?)?Title:(?:\*\*?)?[\s\S]{1,500}?(?:\*\*?)?Summary:(?:\*\*?)?[\s\S]{1,2000}?(?:\*\*?)?Article:(?:\*\*?)?\s*(?:<\/[a-zA-Z0-9]+>\s*)?/i;
+    sanitized = sanitized.replace(leakRegex, "");
+
+    return sanitized
         // Double asterisk → bold (must run before single)
         .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
         // Single asterisk → italic

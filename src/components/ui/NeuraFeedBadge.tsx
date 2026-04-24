@@ -1,4 +1,3 @@
-import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NeuraFeedBadgeProps {
@@ -20,7 +19,6 @@ export function NeuraFeedBadge({ className, size = "sm" }: NeuraFeedBadgeProps) 
                 className
             )}
         >
-            <Zap size={size === "sm" ? 9 : 11} className="fill-cyan-500 text-cyan-500" />
             NeuraFeed
         </span>
     );

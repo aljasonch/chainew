@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { NeuraFeedBadge } from "@/components/ui/NeuraFeedBadge";
-import { ArrowUpRight, Zap, Sparkles, Cpu, DollarSign, Coins, Building2, Newspaper, BookOpen, Radio } from "lucide-react";
+import { ArrowUpRight, Sparkles, Cpu, DollarSign, Coins, Building2, Newspaper, BookOpen, Radio } from "lucide-react";
 import dbConnect from "@/lib/db";
 import Article from "@/models/Article";
 import "@/models/User";
@@ -70,7 +70,7 @@ export default async function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 py-20 md:py-32">
           <div className="max-w-4xl">
             <div className="flex items-center gap-3 mb-6 animate-fadeIn">
-              <Zap className="text-muted" size={20} />
+              <Sparkles className="text-muted" size={20} />
               <span className="text-muted text-sm font-medium tracking-widest uppercase">
                 Hot News
               </span>

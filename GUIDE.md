@@ -1,6 +1,6 @@
 # NeuraFeed API — Integration Guide
 
-Base URL: `https://neurafeed.vercel.app`
+Base URL: `https://feed.neuraspheres.com`
 
 NeuraFeed is an AI-powered news intelligence service. It aggregates RSS signals, detects or validates a trending topic, and generates a structured, factual news article using LLM + Google Search grounding. Articles are stored in Firestore and exposed via a simple REST API.
 
@@ -18,7 +18,7 @@ Returns the most recently generated article.
 **Request**
 
 ```
-GET https://neurafeed.vercel.app/api/latest-news
+GET https://feed.neuraspheres.com/api/latest-news
 ```
 
 **Response — 200 OK**
@@ -75,7 +75,7 @@ Triggers a full article generation run.
 **Request**
 
 ```
-POST https://neurafeed.vercel.app/api/generate
+POST https://feed.neuraspheres.com/api/generate
 Authorization: Bearer <your_api_key>
 Content-Type: application/json
 ```
@@ -276,7 +276,7 @@ export function ArticleRenderer({ article }: { article: NeuraFeedArticle }) {
 
 ```js
 async function renderLatestArticle(containerEl) {
-  const res = await fetch('https://neurafeed.vercel.app/api/latest-news');
+  const res = await fetch('https://feed.neuraspheres.com/api/latest-news');
   if (!res.ok) return;
   const { article } = await res.json();
   if (!article) return;
