@@ -1,37 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
-import dbConnect from "@/lib/db";
-import Source from "@/models/Source";
+import { auth } from "@/app/api/auth/session/route";
+import {
+    createSource,
+    deleteSource,
+    listSources,
+    updateSource,
+} from "@/lib/firestore";
 
 export async function GET(request: NextRequest) {
     try {
-        await dbConnect();
-
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get("page") || "1");
         const limit = parseInt(searchParams.get("limit") || "50");
         const search = searchParams.get("search");
 
-        const query: Record<string, unknown> = {};
-
-        if (search) {
-            query.$or = [
-                { name: { $regex: search, $options: "i" } },
-                { url: { $regex: search, $options: "i" } },
-            ];
-        }
-
-        const total = await Source.countDocuments(query);
-        const sources = await Source.find(query)
-            .sort({ name: 1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .lean();
+        const { items, total } = await listSources(page, limit, search);
 
         return NextResponse.json({
             success: true,
             data: {
-                items: sources,
+                items,
                 total,
                 page,
                 limit,
@@ -58,11 +46,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        await dbConnect();
-
         const body = await request.json();
 
-        const source = await Source.create(body);
+        const source = await createSource({
+            name: body.name,
+            url: body.url,
+        });
 
         return NextResponse.json({
             success: true,
@@ -89,14 +78,10 @@ export async function PUT(request: NextRequest) {
             );
         }
 
-        await dbConnect();
-
         const body = await request.json();
         const { id, ...updateData } = body;
 
-        const source = await Source.findByIdAndUpdate(id, updateData, {
-            new: true,
-        });
+        const source = await updateSource(id, updateData);
 
         if (!source) {
             return NextResponse.json(
@@ -130,8 +115,6 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        await dbConnect();
-
         const { searchParams } = new URL(request.url);
         const id = searchParams.get("id");
 
@@ -142,9 +125,9 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        const source = await Source.findByIdAndDelete(id);
+        const deleted = await deleteSource(id);
 
-        if (!source) {
+        if (!deleted) {
             return NextResponse.json(
                 { success: false, error: "Source not found" },
                 { status: 404 }

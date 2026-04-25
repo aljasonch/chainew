@@ -32,6 +32,7 @@ interface ArticleFormData {
         metaTitle: string;
         metaDescription: string;
         ogImageUrl: string;
+        ogImagePublicId: string;
     };
 }
 
@@ -71,6 +72,7 @@ export default function ArticleEditorPage({
             metaTitle: "",
             metaDescription: "",
             ogImageUrl: "",
+            ogImagePublicId: "",
         },
     });
 
@@ -169,6 +171,10 @@ export default function ArticleEditorPage({
             typeof incomingSeo["ogImageUrl"] === "string"
                 ? incomingSeo["ogImageUrl"]
                 : "";
+        const ogImagePublicId =
+            typeof incomingSeo["ogImagePublicId"] === "string"
+                ? incomingSeo["ogImagePublicId"]
+                : "";
 
         setForm((prev) => ({
             ...prev,
@@ -185,6 +191,7 @@ export default function ArticleEditorPage({
                 metaTitle: metaTitle || prev.seo.metaTitle,
                 metaDescription: metaDescription || prev.seo.metaDescription,
                 ogImageUrl: ogImageUrl || prev.seo.ogImageUrl,
+                ogImagePublicId: ogImagePublicId || prev.seo.ogImagePublicId,
             },
         }));
     };
@@ -240,6 +247,7 @@ export default function ArticleEditorPage({
                         metaTitle: article.seo?.metaTitle || "",
                         metaDescription: article.seo?.metaDescription || "",
                         ogImageUrl: article.seo?.ogImageUrl || "",
+                        ogImagePublicId: article.seo?.ogImagePublicId || "",
                     },
                 });
             }
@@ -444,7 +452,7 @@ export default function ArticleEditorPage({
                                 label="Paste JSON"
                                 value={importJson}
                                 onChange={(e) => setImportJson(e.target.value)}
-                                placeholder={`{\n  "title": "...",\n  "slug": "custom-url-slug",\n  "summary": "...",\n  "category": "AI & ML",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": ""\n  }\n}`}
+                                placeholder={`{\n  "title": "...",\n  "slug": "custom-url-slug",\n  "summary": "...",\n  "category": "AI & ML",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": "",\n    "ogImagePublicId": ""\n  }\n}`}
                                 className="min-h-[180px]"
                                 spellCheck={false}
                             />
@@ -664,10 +672,14 @@ export default function ArticleEditorPage({
                                 </label>
                                 <ImageUpload
                                     value={form.seo.ogImageUrl}
-                                    onChange={(url) =>
+                                    onChange={({ url, publicId }) =>
                                         setForm((prev) => ({
                                             ...prev,
-                                            seo: { ...prev.seo, ogImageUrl: url },
+                                            seo: {
+                                                ...prev.seo,
+                                                ogImageUrl: url,
+                                                ogImagePublicId: publicId ?? prev.seo.ogImagePublicId,
+                                            },
                                         }))
                                     }
                                 />

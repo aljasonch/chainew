@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchLatestNeuraFeedArticle } from "@/lib/neurafeed";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/app/api/auth/session/route";
 
 export async function GET() {
     // Require an active admin session

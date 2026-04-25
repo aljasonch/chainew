@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
-import dbConnect from "@/lib/db";
-import Image from "@/models/Image";
+import { auth } from "@/app/api/auth/session/route";
+import { UploadApiResponse } from "cloudinary";
+import { getCloudinary, getCloudinaryUploadPreset } from "@/lib/cloudinary";
 
 export async function POST(request: NextRequest) {
     try {
@@ -56,21 +56,38 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        await dbConnect();
+        const cloudinary = getCloudinary();
+        const uploadPreset = getCloudinaryUploadPreset();
 
-        // Create image in MongoDB
-        const image = await Image.create({
-            data: buffer,
-            contentType: file.type,
-            filename: file.name.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 255),
+        const publicIdBase = file.name
+            .replace(/[^a-zA-Z0-9._-]/g, "_")
+            .replace(/\.[^.]+$/, "")
+            .slice(0, 120);
+
+        const uploadResult = await new Promise<UploadApiResponse>((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                {
+                    upload_preset: uploadPreset,
+                    public_id: `${Date.now()}-${publicIdBase || "image"}`,
+                    resource_type: "image",
+                    overwrite: false,
+                },
+                (error, result) => {
+                    if (error || !result) {
+                        reject(error ?? new Error("Upload failed"));
+                        return;
+                    }
+                    resolve(result);
+                }
+            );
+
+            stream.end(buffer);
         });
-
-        // Return API URL
-        const url = `/api/images/${image._id}`;
 
         return NextResponse.json({
             success: true,
-            url,
+            url: uploadResult.secure_url,
+            publicId: uploadResult.public_id,
             message: "File uploaded successfully",
         });
     } catch (error) {

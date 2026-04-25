@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
-import Article from "@/models/Article";
-import "@/models/User";
+import { listPublishedForFeeds } from "@/lib/firestore";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export async function GET() {
-    await dbConnect();
-
-    const articles = await Article.find({ status: "published" })
-        .populate("authorId", "name")
-        .select("title slug summary publishedAt authorId")
-        .sort({ publishedAt: -1 })
-        .limit(50)
-        .lean();
+    const articles = await listPublishedForFeeds(50);
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">

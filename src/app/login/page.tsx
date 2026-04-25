@@ -1,12 +1,34 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
+
+import { firebaseApp } from "@/lib/firebase";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+
+function mapFirebaseError(error: unknown): string {
+    if (error && typeof error === "object" && "code" in error) {
+        const code = String((error as { code: string }).code);
+        if (
+            code === "auth/invalid-credential" ||
+            code === "auth/user-not-found" ||
+            code === "auth/wrong-password" ||
+            code === "auth/invalid-email"
+        ) {
+            return "Invalid email or password";
+        }
+
+        if (code === "auth/too-many-requests") {
+            return "Too many login attempts. Please try again later.";
+        }
+    }
+
+    return "An error occurred. Please try again.";
+}
 
 function LoginForm() {
     const searchParams = useSearchParams();
@@ -22,26 +44,37 @@ function LoginForm() {
         setError("");
         setLoading(true);
 
-
         try {
-            const result = await signIn("credentials", {
-                email,
-                password,
-                redirect: false,
+            const firebaseAuth = getAuth(firebaseApp);
+            const credential = await signInWithEmailAndPassword(
+                firebaseAuth,
+                email.trim(),
+                password
+            );
+            const idToken = await credential.user.getIdToken(true);
+
+            const sessionRes = await fetch("/api/auth/session", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ idToken }),
             });
+            const sessionPayload = await sessionRes.json();
 
-
-
-            if (result?.error) {
-
-                setError("Invalid email or password");
+            if (!sessionRes.ok || !sessionPayload?.success) {
+                await signOut(firebaseAuth).catch(() => undefined);
+                setError(
+                    typeof sessionPayload?.error === "string"
+                        ? sessionPayload.error
+                        : "Failed to create session"
+                );
                 setLoading(false);
             } else {
-
                 window.location.href = callbackUrl;
             }
-        } catch {
-            setError("An error occurred. Please try again.");
+        } catch (error) {
+            setError(mapFirebaseError(error));
             setLoading(false);
         }
     };

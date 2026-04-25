@@ -1,22 +1,10 @@
-import dbConnect from "@/lib/db";
-import Revision from "@/models/Revision";
-import "@/models/User";
-import "@/models/Article";
+import { listRevisions } from "@/lib/firestore";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 async function getRevisions() {
-    await dbConnect();
-
-    const revisions = await Revision.find()
-        .populate("userId", "name email")
-        .populate("articleId", "title slug")
-        .sort({ createdAt: -1 })
-        .limit(100)
-        .lean();
-
-    return revisions;
+    return listRevisions(100);
 }
 
 export default async function RevisionsPage() {

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
-import dbConnect from "@/lib/db";
+import { auth } from "@/app/api/auth/session/route";
 import { sendDiscordPublishNotification } from "@/lib/discord";
-import Article from "@/models/Article";
-import "@/models/User";
+import { getArticleById } from "@/lib/firestore";
 
 export async function POST(
     _request: NextRequest,
@@ -21,11 +19,7 @@ export async function POST(
 
         const { id } = await params;
 
-        await dbConnect();
-
-        const article = await Article.findById(id)
-            .populate("authorId", "name email")
-            .lean();
+        const article = await getArticleById(id);
 
         if (!article) {
             return NextResponse.json(

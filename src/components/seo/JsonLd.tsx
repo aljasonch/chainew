@@ -21,15 +21,18 @@ interface JsonLdProps {
 
 export function JsonLd({ article }: JsonLdProps) {
     const baseUrl = getBaseUrl() || "http://localhost:3000";
+    const ogImageUrl = article.seo.ogImageUrl
+        ? article.seo.ogImageUrl.startsWith("http://") || article.seo.ogImageUrl.startsWith("https://")
+            ? article.seo.ogImageUrl
+            : `${baseUrl}${article.seo.ogImageUrl}`
+        : undefined;
 
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "NewsArticle",
         headline: article.title,
         description: article.seo.metaDescription || article.summary,
-        image: article.seo.ogImageUrl
-            ? [`${baseUrl}${article.seo.ogImageUrl}`]
-            : undefined,
+        image: ogImageUrl ? [ogImageUrl] : undefined,
         datePublished: article.publishedAt
             ? new Date(article.publishedAt).toISOString()
             : undefined,

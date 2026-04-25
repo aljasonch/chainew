@@ -31,10 +31,6 @@ function clampForDiscord(value: string, maxLength: number): string {
 }
 
 function resolveBaseUrl(): string {
-    if (process.env.NEXTAUTH_URL) {
-        return process.env.NEXTAUTH_URL;
-    }
-
     if (process.env.NEXT_PUBLIC_SITE_URL) {
         return process.env.NEXT_PUBLIC_SITE_URL;
     }
