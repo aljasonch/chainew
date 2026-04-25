@@ -364,11 +364,11 @@ function normalizeSeo(value: unknown): IArticleSeo {
         ogImageUrl:
             typeof data.ogImageUrl === "string" && data.ogImageUrl.trim()
                 ? cleanText(data.ogImageUrl)
-                : undefined,
+                : "",
         ogImagePublicId:
             typeof data.ogImagePublicId === "string" && data.ogImagePublicId.trim()
                 ? cleanText(data.ogImagePublicId)
-                : undefined,
+                : "",
     };
 }
 
