@@ -178,6 +178,7 @@ export async function POST(request: NextRequest) {
         authorName: "NeuraFeed",
         isNeuraFeed: true,
         topic: nfArticle.topic,
+        ogImageUrl: nfArticle.coverImage,
     });
 
     console.log(
