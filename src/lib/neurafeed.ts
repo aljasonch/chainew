@@ -10,6 +10,9 @@ export interface NeuraFeedArticle {
     tags: string[];
     topic: string;
     createdAt: string; // ISO 8601
+    coverImage?: string;
+    imageSource?: string;
+    imageSourceUrl?: string;
 }
 
 export interface NeuraFeedLatestResponse {
