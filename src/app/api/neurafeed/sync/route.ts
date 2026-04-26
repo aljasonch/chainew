@@ -144,6 +144,7 @@ export async function POST(request: NextRequest) {
             seo: {
                 metaTitle: nfArticle.title,
                 metaDescription: nfArticle.summary.slice(0, 160),
+                ...(nfArticle.coverImage ? { ogImageUrl: nfArticle.coverImage } : {}),
             },
             publishedAt: new Date(nfArticle.createdAt),
             source: "neurafeed",
