@@ -29,9 +29,26 @@ const siteKeywords = [
 ];
 
 const baseUrl = getBaseUrl();
+const siteUrl = baseUrl;
 const ogImage = `/api/og?title=${encodeURIComponent(siteName)}&subtitle=${encodeURIComponent(
   "AI, finance, blockchain, and policy news",
 )}`;
+const websiteStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteName,
+  alternateName: "Chainew News",
+  url: siteUrl,
+};
+
+const organizationStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: siteName,
+  url: siteUrl,
+  logo: `${siteUrl}/icon.svg`,
+};
+
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
@@ -40,6 +57,21 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   applicationName: siteName,
+  creator: siteName,
+  publisher: siteName,
+  alternates: {
+    canonical: siteUrl,
+  },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
+  },
+  appleWebApp: {
+    title: siteName,
+  },
   title: {
     default: siteTitle,
     template: `%s | ${siteName}`,
@@ -84,6 +116,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={montserrat.variable}>
       <body className="antialiased font-sans" style={{ background: 'var(--color-bg-primary)' }}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteStructuredData) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData) }}
+        />
         <Suspense fallback={null}>
           <RouteLoadingIndicator />
         </Suspense>
