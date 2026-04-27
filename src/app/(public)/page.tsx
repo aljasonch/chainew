@@ -1,15 +1,26 @@
 import Link from "next/link";
-import { getHomePageData as getFirestoreHomePageData } from "@/lib/firestore";
+import {
+  getHomePageData as getFirestoreHomePageData,
+  listPublishedForLatest,
+  listPublishedForTrending,
+} from "@/lib/firestore";
 
 export const dynamic = "force-dynamic";
 
 async function getHomePageData() {
-  const { featuredArticles, latestArticles } =
-    await getFirestoreHomePageData();
+  const [homeData, latestData, trendingData] = await Promise.all([
+    getFirestoreHomePageData(),
+    listPublishedForLatest(1, 4),
+    listPublishedForTrending(1, 4),
+  ]);
+
+  const { featuredArticles, latestArticles } = homeData;
 
   return {
     featuredArticles,
     latestArticles,
+    latestSectionArticles: latestData.items,
+    trendingSectionArticles: trendingData.items,
   };
 }
 
@@ -40,7 +51,12 @@ function getImageUrl(article?: { seo?: { ogImageUrl?: string } }) {
 }
 
 export default async function HomePage() {
-  const { featuredArticles, latestArticles } = await getHomePageData();
+  const {
+    featuredArticles,
+    latestArticles,
+    latestSectionArticles,
+    trendingSectionArticles,
+  } = await getHomePageData();
   const allArticles = [...featuredArticles, ...latestArticles];
   const uniqueArticles = Array.from(
     new Map(allArticles.map((article) => [article._id, article])).values(),
@@ -48,8 +64,8 @@ export default async function HomePage() {
 
   const heroArticle = uniqueArticles[0];
   const secondLead = uniqueArticles[1];
-  const visualLead = uniqueArticles[2];
-  const rightRail = uniqueArticles.slice(3, 7);
+  const middleLeads = uniqueArticles.slice(1, 4);
+  const rightRail = uniqueArticles.slice(4, 8);
   const hasArticles = uniqueArticles.length > 0;
 
   return (
@@ -102,7 +118,7 @@ export default async function HomePage() {
           </section>
         )}
 
-        {(secondLead || visualLead || rightRail.length > 0) && (
+        {(secondLead || middleLeads.length > 0 || rightRail.length > 0) && (
           <section className="grid gap-6 pt-6 lg:grid-cols-[1fr_1.25fr_1.05fr]">
             {secondLead && (
               <article>
@@ -123,37 +139,44 @@ export default async function HomePage() {
               </article>
             )}
 
-            {visualLead && (
-              <article>
-                <Link
-                  href={`/article/${visualLead.slug}`}
-                  className="group relative block h-[320px] overflow-hidden rounded-sm bg-neutral-900"
-                >
-                  {getImageUrl(visualLead) ? (
-                    <img
-                      src={getImageUrl(visualLead) as string}
-                      alt={visualLead.title}
-                      className="h-full w-full object-cover opacity-85 transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-neutral-700 text-sm font-medium text-neutral-200">
-                      Image unavailable
-                    </div>
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-5">
-                    <h3 className="text-base font-bold leading-tight text-white md:text-lg">
-                      {visualLead.title}
-                    </h3>
-                    {visualLead.publishedAt && (
-                      <p className="mt-2 text-sm text-neutral-200">
-                        {formatRelativeTime(visualLead.publishedAt)}
-                      </p>
+            {middleLeads.length > 0 && (
+              <article className="flex flex-col gap-4">
+                {middleLeads.map((middleArticle, index) => (
+                  <Link
+                    key={middleArticle._id}
+                    href={`/article/${middleArticle.slug}`}
+                    className="group relative block h-[152px] overflow-hidden rounded-sm bg-neutral-900 md:h-[156px]"
+                  >
+                    {getImageUrl(middleArticle) ? (
+                      <img
+                        src={getImageUrl(middleArticle) as string}
+                        alt={middleArticle.title}
+                        className="h-full w-full object-cover opacity-85 transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-neutral-700 text-sm font-medium text-neutral-200">
+                        Image unavailable
+                      </div>
                     )}
-                  </div>
-                  <span className="absolute right-4 top-4 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white">
-                    Featured
-                  </span>
-                </Link>
+
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4">
+                      <h3 className="text-sm font-bold leading-tight text-white md:text-base line-clamp-2">
+                        {middleArticle.title}
+                      </h3>
+                      {middleArticle.publishedAt && (
+                        <p className="mt-1 text-xs text-neutral-200 md:text-sm">
+                          {formatRelativeTime(middleArticle.publishedAt)}
+                        </p>
+                      )}
+                    </div>
+
+                    {index === 0 && (
+                      <span className="absolute right-3 top-3 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold text-white md:text-xs">
+                        Featured
+                      </span>
+                    )}
+                  </Link>
+                ))}
               </article>
             )}
 
@@ -175,6 +198,92 @@ export default async function HomePage() {
                 ))}
               </aside>
             )}
+          </section>
+        )}
+
+        {trendingSectionArticles.length > 0 && (
+          <section className="mt-10 border-t border-neutral-300 pt-8">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-neutral-900">Trending</h2>
+              <Link
+                href="/trending"
+                className="text-sm font-semibold text-neutral-700 transition-colors hover:text-neutral-900"
+              >
+                Read More
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {trendingSectionArticles.map((article) => (
+                <Link key={`trending-${article._id}`} href={`/article/${article.slug}`} className="group block">
+                  <div className="overflow-hidden rounded-sm bg-neutral-200">
+                    {getImageUrl(article) ? (
+                      <img
+                        src={getImageUrl(article) as string}
+                        alt={article.title}
+                        className="h-[110px] w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-[150px]"
+                      />
+                    ) : (
+                      <div className="flex h-[110px] w-full items-center justify-center bg-neutral-300 text-xs font-medium text-neutral-600 md:h-[150px]">
+                        Image unavailable
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-xs font-medium text-neutral-500 md:text-sm">
+                    {(article.views ?? 0).toLocaleString()} views
+                  </p>
+
+                  <h3 className="mt-2 text-sm font-semibold leading-snug text-neutral-900 transition-colors group-hover:text-neutral-700 md:text-base">
+                    {article.title}
+                  </h3>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {latestSectionArticles.length > 0 && (
+          <section className="mt-10 border-t border-neutral-300 pt-8">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-neutral-900">Latest</h2>
+              <Link
+                href="/latest"
+                className="text-sm font-semibold text-neutral-700 transition-colors hover:text-neutral-900"
+              >
+                Read More
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {latestSectionArticles.map((article) => (
+                <Link key={`latest-${article._id}`} href={`/article/${article.slug}`} className="group block">
+                  <div className="overflow-hidden rounded-sm bg-neutral-200">
+                    {getImageUrl(article) ? (
+                      <img
+                        src={getImageUrl(article) as string}
+                        alt={article.title}
+                        className="h-[110px] w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-[150px]"
+                      />
+                    ) : (
+                      <div className="flex h-[110px] w-full items-center justify-center bg-neutral-300 text-xs font-medium text-neutral-600 md:h-[150px]">
+                        Image unavailable
+                      </div>
+                    )}
+                  </div>
+
+                  {article.publishedAt && (
+                    <p className="mt-2 text-xs font-medium text-neutral-500 md:text-sm">
+                      {formatRelativeTime(article.publishedAt)}
+                    </p>
+                  )}
+
+                  <h3 className="mt-2 text-sm font-semibold leading-snug text-neutral-900 transition-colors group-hover:text-neutral-700 md:text-base">
+                    {article.title}
+                  </h3>
+                </Link>
+              ))}
+            </div>
           </section>
         )}
       </div>

@@ -6,9 +6,6 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/latest", label: "Latest" },
-    { href: "/trending", label: "Trending" },
     { href: "/category/tech", label: "Tech" },
     { href: "/category/finance", label: "Finance" },
     { href: "/category/blockchain", label: "Blockchain" },
