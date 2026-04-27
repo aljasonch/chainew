@@ -6,7 +6,7 @@ import { RouteLoadingIndicator } from "@/components/RouteLoadingIndicator";
 import { getBaseUrl } from "@/lib/utils";
 
 const siteName = "Chainew";
-const siteTitle = `Technology, Finance & Policy News - ${siteName}`;
+const siteTitle = `${siteName} | Technology, Finance & Policy News`;
 const siteDescription =
   "Chainew delivers trusted coverage of tech, blockchain, finance, and public affairs, connecting technology, markets, and policy with clear analysis.";
 const siteKeywords = [
