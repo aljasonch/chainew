@@ -453,7 +453,7 @@ function buildArticleDoc(input: CreateArticleInput, now: Date): ArticleDoc {
         publishedAt,
         views: Number(input.views ?? 0),
         source: normalizeArticleSource(input.source),
-        neuraFeedId: input.neuraFeedId ? cleanText(input.neuraFeedId) : undefined,
+        ...(input.neuraFeedId ? { neuraFeedId: cleanText(input.neuraFeedId) } : {}),
         searchTokens: buildSearchTokens(title, subtitle, summary, category, ...tags),
         createdAt: now,
         updatedAt: now,
@@ -970,8 +970,9 @@ export async function updateArticle(id: string, updates: Partial<CreateArticleIn
             });
         }
 
+        const { neuraFeedId: _existingNeuraFeedId, ...existingWithoutNeuraFeedId } = existing;
         const nextDoc: ArticleDoc = {
-            ...existing,
+            ...existingWithoutNeuraFeedId,
             title,
             slug,
             slugLower: slug,
@@ -1007,7 +1008,7 @@ export async function updateArticle(id: string, updates: Partial<CreateArticleIn
             publishedAt: nextPublishedAt,
             views: typeof updates.views === "number" ? updates.views : existing.views,
             source: updates.source ? normalizeArticleSource(updates.source) : existing.source,
-            neuraFeedId: nextNeuraFeedId,
+            ...(nextNeuraFeedId !== undefined ? { neuraFeedId: nextNeuraFeedId } : {}),
             searchTokens: buildSearchTokens(title, subtitle, summary, category, ...tags),
             createdAt: existing.createdAt,
             updatedAt: now,
