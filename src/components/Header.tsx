@@ -9,6 +9,10 @@ const navLinks = [
     { href: "/", label: "Home" },
     { href: "/latest", label: "Latest" },
     { href: "/trending", label: "Trending" },
+    { href: "/category/tech", label: "Tech" },
+    { href: "/category/finance", label: "Finance" },
+    { href: "/category/blockchain", label: "Blockchain" },
+    { href: "/category/public-affairs", label: "Public Affairs" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
 ];
@@ -27,13 +31,13 @@ export function Header() {
                         Chainew
                     </Link>
 
-                    <nav className="hidden md:flex items-center gap-1">
+                    <nav className="hidden lg:flex items-center gap-1">
                         {navLinks.map((link, index) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
                                 className={cn(
-                                    "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
+                                    "px-3 py-2 text-sm font-medium rounded-md transition-all duration-200",
                                     "text-secondary hover:text-primary hover:bg-muted/50"
                                 )}
                                 style={{ animationDelay: `${index * 0.05}s` }}
@@ -45,7 +49,7 @@ export function Header() {
 
                     <button
                         onClick={() => setMobileOpen(!mobileOpen)}
-                        className="md:hidden p-2 rounded-md hover:bg-muted transition-colors text-primary"
+                        className="lg:hidden p-2 rounded-md hover:bg-muted transition-colors text-primary"
                         aria-label="Toggle menu"
                     >
                         <div className="relative w-6 h-6">
@@ -69,8 +73,8 @@ export function Header() {
 
                 <div
                     className={cn(
-                        "md:hidden overflow-hidden transition-all duration-300 ease-in-out",
-                        mobileOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+                        "lg:hidden overflow-hidden transition-all duration-300 ease-in-out",
+                        mobileOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                     )}
                 >
                     <nav className="py-4 border-t border-default">

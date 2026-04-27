@@ -50,65 +50,105 @@ export function Pagination({ currentPage, totalPages, basePath }: PaginationProp
     const pageNumbers = getPageNumbers();
 
     return (
-        <nav className="flex items-center justify-center gap-2 mt-12" aria-label="Pagination">
-            {currentPage > 1 ? (
-                <Link
-                    href={buildPageUrl(currentPage - 1)}
-                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-card border border-default text-primary hover:bg-muted transition-colors"
-                    aria-label="Go to previous page"
-                >
-                    <ChevronLeft size={16} />
-                    Previous
-                </Link>
-            ) : (
-                <span className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-muted border border-default text-secondary cursor-not-allowed opacity-50">
-                    <ChevronLeft size={16} />
-                    Previous
-                </span>
-            )}
+        <nav className="mt-8 sm:mt-12" aria-label="Pagination">
+            <div className="flex items-center justify-between gap-2 sm:hidden">
+                {currentPage > 1 ? (
+                    <Link
+                        href={buildPageUrl(currentPage - 1)}
+                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg bg-card border border-default text-primary hover:bg-muted transition-colors"
+                        aria-label="Go to previous page"
+                    >
+                        <ChevronLeft size={16} />
+                        Prev
+                    </Link>
+                ) : (
+                    <span className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg bg-muted border border-default text-secondary cursor-not-allowed opacity-50">
+                        <ChevronLeft size={16} />
+                        Prev
+                    </span>
+                )}
 
-            <div className="flex items-center gap-1">
-                {pageNumbers.map((page, index) =>
-                    page === "..." ? (
-                        <span
-                            key={`ellipsis-${index}`}
-                            className="px-3 py-2 text-sm text-secondary"
-                        >
-                            ...
-                        </span>
-                    ) : (
-                        <Link
-                            key={page}
-                            href={buildPageUrl(page as number)}
-                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                                currentPage === page
-                                    ? "bg-primary text-inverse"
-                                    : "bg-card border border-default text-primary hover:bg-muted"
-                            }`}
-                            aria-label={`Go to page ${page}`}
-                            {...(currentPage === page ? { 'aria-current': 'page' as const } : {})}
-                        >
-                            {page}
-                        </Link>
-                    )
+                <span className="text-xs font-medium text-secondary">
+                    Page {currentPage} of {totalPages}
+                </span>
+
+                {currentPage < totalPages ? (
+                    <Link
+                        href={buildPageUrl(currentPage + 1)}
+                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg bg-card border border-default text-primary hover:bg-muted transition-colors"
+                        aria-label="Go to next page"
+                    >
+                        Next
+                        <ChevronRight size={16} />
+                    </Link>
+                ) : (
+                    <span className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg bg-muted border border-default text-secondary cursor-not-allowed opacity-50">
+                        Next
+                        <ChevronRight size={16} />
+                    </span>
                 )}
             </div>
 
-            {currentPage < totalPages ? (
-                <Link
-                    href={buildPageUrl(currentPage + 1)}
-                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-card border border-default text-primary hover:bg-muted transition-colors"
-                    aria-label="Go to next page"
-                >
-                    Next
-                    <ChevronRight size={16} />
-                </Link>
-            ) : (
-                <span className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-muted border border-default text-secondary cursor-not-allowed opacity-50">
-                    Next
-                    <ChevronRight size={16} />
-                </span>
-            )}
+            <div className="hidden items-center justify-center gap-2 sm:flex">
+                {currentPage > 1 ? (
+                    <Link
+                        href={buildPageUrl(currentPage - 1)}
+                        className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-card border border-default text-primary hover:bg-muted transition-colors"
+                        aria-label="Go to previous page"
+                    >
+                        <ChevronLeft size={16} />
+                        Previous
+                    </Link>
+                ) : (
+                    <span className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-muted border border-default text-secondary cursor-not-allowed opacity-50">
+                        <ChevronLeft size={16} />
+                        Previous
+                    </span>
+                )}
+
+                <div className="flex items-center gap-1">
+                    {pageNumbers.map((page, index) =>
+                        page === "..." ? (
+                            <span
+                                key={`ellipsis-${index}`}
+                                className="px-3 py-2 text-sm text-secondary"
+                            >
+                                ...
+                            </span>
+                        ) : (
+                            <Link
+                                key={page}
+                                href={buildPageUrl(page as number)}
+                                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                    currentPage === page
+                                        ? "bg-primary text-inverse"
+                                        : "bg-card border border-default text-primary hover:bg-muted"
+                                }`}
+                                aria-label={`Go to page ${page}`}
+                                {...(currentPage === page ? { 'aria-current': 'page' as const } : {})}
+                            >
+                                {page}
+                            </Link>
+                        )
+                    )}
+                </div>
+
+                {currentPage < totalPages ? (
+                    <Link
+                        href={buildPageUrl(currentPage + 1)}
+                        className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-card border border-default text-primary hover:bg-muted transition-colors"
+                        aria-label="Go to next page"
+                    >
+                        Next
+                        <ChevronRight size={16} />
+                    </Link>
+                ) : (
+                    <span className="flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg bg-muted border border-default text-secondary cursor-not-allowed opacity-50">
+                        Next
+                        <ChevronRight size={16} />
+                    </span>
+                )}
+            </div>
         </nav>
     );
 }

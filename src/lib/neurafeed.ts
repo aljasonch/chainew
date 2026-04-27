@@ -43,7 +43,7 @@ export async function fetchLatestNeuraFeedArticle(): Promise<NeuraFeedArticle | 
 // ──────────────────────────────────────────────
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
-    "AI & ML": [
+    "Tech": [
         "ai", "artificial intelligence", "machine learning", "ml", "llm",
         "gpt", "claude", "gemini", "openai", "anthropic", "deepmind",
         "neural", "model", "chatbot", "generative", "transformer",
@@ -78,7 +78,7 @@ export function detectCategory(topic: string, title: string): string {
     const best = Object.entries(scores).sort(([, a], [, b]) => b - a)[0];
     if (best && best[1] > 0) return best[0];
 
-    return "AI & ML";
+    return "Tech";
 }
 
 export function parseNeuraFeedSources(

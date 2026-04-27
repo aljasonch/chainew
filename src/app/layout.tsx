@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Montserrat } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { RouteLoadingIndicator } from "@/components/RouteLoadingIndicator";
@@ -7,7 +8,7 @@ import { getBaseUrl } from "@/lib/utils";
 const siteName = "Chainew";
 const siteTitle = `Technology, Finance & Policy News - ${siteName}`;
 const siteDescription =
-  "Chainew delivers trusted coverage of AI & ML, blockchain, finance, and public affairs, connecting technology, markets, and policy with clear analysis.";
+  "Chainew delivers trusted coverage of tech, blockchain, finance, and public affairs, connecting technology, markets, and policy with clear analysis.";
 const siteKeywords = [
   "Chainew",
   "tech news",
@@ -31,6 +32,10 @@ const baseUrl = getBaseUrl();
 const ogImage = `/api/og?title=${encodeURIComponent(siteName)}&subtitle=${encodeURIComponent(
   "AI, finance, blockchain, and policy news",
 )}`;
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -77,7 +82,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={montserrat.variable}>
       <body className="antialiased font-sans" style={{ background: 'var(--color-bg-primary)' }}>
         <Suspense fallback={null}>
           <RouteLoadingIndicator />

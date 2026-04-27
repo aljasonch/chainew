@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const categories = [
-    "AI & ML",
+    "Tech",
     "Finance",
     "Blockchain",
     "Public Affairs",

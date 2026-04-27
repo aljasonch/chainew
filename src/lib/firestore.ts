@@ -1172,7 +1172,7 @@ export async function getHomePageData(): Promise<{
         .filter((article) => article.status === "published");
 
     const featuredArticles = recentArticles.slice(0, 4);
-    const latestArticles = recentArticles.slice(0, 4);
+    const latestArticles = recentArticles.slice(4, 12);
     const neuraFeedArticle =
         recentArticles.find((article) => article.source === "neurafeed") ?? null;
 
@@ -1190,15 +1190,19 @@ export async function getHomePageData(): Promise<{
     };
 }
 
-export async function listPublishedByCategory(category: string): Promise<IArticle[]> {
-    const snapshot = await articlesCollection
-        .where("status", "==", "published")
-        .where("categoryKey", "==", normalizeCategoryKey(category))
-        .orderBy("publishedAt", "desc")
-        .limit(50)
-        .get();
-
-    return snapshot.docs.map((doc) => mapArticle(doc.id, doc.data()));
+export async function listPublishedByCategory(
+    category: string,
+    page: number,
+    limit: number,
+): Promise<{ items: IArticle[]; total: number }> {
+    return listArticles({
+        page,
+        limit,
+        status: "published",
+        category,
+        orderBy: "publishedAt",
+        orderDirection: "desc",
+    });
 }
 
 export async function listPublishedByTag(tag: string): Promise<IArticle[]> {

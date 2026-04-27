@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "eslint",
     "migrate:firestore": "tsx scripts/migrate-mongo-to-firestore.ts",
-    "migrate:firestore:dry": "tsx scripts/migrate-mongo-to-firestore.ts --dry-run"
+    "migrate:firestore:dry": "tsx scripts/migrate-mongo-to-firestore.ts --dry-run",
+    "migrate:category:tech": "tsx scripts/migrate-ai-ml-to-tech.ts",
+    "migrate:category:tech:dry": "tsx scripts/migrate-ai-ml-to-tech.ts --dry-run"
   },
   "dependencies": {
     "@mdx-js/react": "^3.1.1",

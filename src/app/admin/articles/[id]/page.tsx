@@ -37,7 +37,7 @@ interface ArticleFormData {
 }
 
 const categories = [
-    "AI & ML",
+    "Tech",
     "Finance",
     "Blockchain",
     "Public Affairs",
@@ -452,7 +452,7 @@ export default function ArticleEditorPage({
                                 label="Paste JSON"
                                 value={importJson}
                                 onChange={(e) => setImportJson(e.target.value)}
-                                placeholder={`{\n  "title": "...",\n  "slug": "custom-url-slug",\n  "summary": "...",\n  "category": "AI & ML",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": "",\n    "ogImagePublicId": ""\n  }\n}`}
+                                placeholder={`{\n  "title": "...",\n  "slug": "custom-url-slug",\n  "summary": "...",\n  "category": "Tech",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": "",\n    "ogImagePublicId": ""\n  }\n}`}
                                 className="min-h-[180px]"
                                 spellCheck={false}
                             />
