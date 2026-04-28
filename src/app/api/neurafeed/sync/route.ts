@@ -33,8 +33,22 @@ import { auth } from "@/app/api/auth/session/route";
 
 function isCronAuthorized(request: NextRequest): boolean {
     const cronSecret = process.env.CRON_SECRET;
-    if (!cronSecret) return false;
     const authHeader = request.headers.get("authorization") ?? "";
+    const userAgent = request.headers.get("user-agent") ?? "";
+    const vercelCronHeader = request.headers.get("x-vercel-cron");
+
+    if (vercelCronHeader === "1") {
+        return true;
+    }
+
+    if (userAgent === "vercel-cron/1.0") {
+        return true;
+    }
+
+    if (!cronSecret) {
+        return false;
+    }
+
     return authHeader === `Bearer ${cronSecret}`;
 }
 
