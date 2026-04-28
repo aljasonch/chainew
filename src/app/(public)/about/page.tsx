@@ -1,107 +1,87 @@
-import { Cpu, DollarSign, Coins, Building2 } from "lucide-react";
+import Link from "next/link";
 
-const team = [
-    {
-        name: "Jason Christian",
-        role: "Founder & Editor-in-Chief",
-        bio: "Passionate about technology and its intersection with finance, policy, and innovation. Dedicated to delivering insightful analysis on emerging trends.",
-    },
-];
+const focusAreas = ["Tech", "Finance", "Blockchain", "Public Affairs"];
 
-const coverage = [
-    { icon: Cpu, name: "AI & Machine Learning", desc: "Latest developments in artificial intelligence, LLMs, and automation" },
-    { icon: DollarSign, name: "Finance", desc: "Market trends, fintech innovations, and economic analysis" },
-    { icon: Coins, name: "Blockchain", desc: "Cryptocurrency, DeFi, and decentralized technologies" },
-    { icon: Building2, name: "Public Affairs", desc: "Policy, regulation, and governance in the tech sector" },
+const principles = [
+    "Clear reporting over noise.",
+    "Useful context over empty hype.",
+    "A calm, readable view of fast-moving sectors.",
 ];
 
 export default function AboutPage() {
     return (
-        <div className="min-h-screen" style={{ background: 'var(--color-bg-primary)' }}>
-            <section className="bg-primary py-20">
-                <div className="max-w-4xl mx-auto px-4 text-center">
-                    <h1 className="text-4xl md:text-6xl font-black text-inverse mb-6 animate-fadeInUp" style={{ animationFillMode: 'forwards' }}>
-                        About <span className="text-accent">Chainew</span>
+        <div className="min-h-screen bg-[color:var(--color-bg-primary)]">
+            <section className="border-b border-default">
+                <div className="mx-auto max-w-4xl px-4 py-14 md:px-6 md:py-18">
+                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">About Chainew</p>
+                    <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight text-primary md:text-5xl">
+                        Clear reporting on technology, markets, and policy.
                     </h1>
-                    <p className="text-xl text-muted animate-fadeInUp stagger-1" style={{ animationFillMode: 'forwards' }}>
-                        Your trusted source for technology, finance, and policy insights since 2025.
+                    <p className="mt-6 max-w-2xl text-base leading-8 text-secondary md:text-lg">
+                        Chainew is a simple newsroom built around one idea: explain what matters without making readers work for it. We cover major shifts in Tech, finance, blockchain, and public affairs with a focus on clarity, relevance, and context.
                     </p>
+                    <p className="mt-4 max-w-2xl text-sm leading-7 text-secondary md:text-base">
+                        Some coverage is powered by NeuraFeed, our news intelligence feed from Neuraspheres. More info: <a href="https://feed.neuraspheres.com/" target="_blank" rel="noreferrer" className="font-semibold text-primary underline decoration-default underline-offset-4 hover:text-secondary">feed.neuraspheres.com</a>.
+                    </p>
+
+                    <div className="mt-8 flex flex-wrap gap-3">
+                        <Link
+                            href="/latest"
+                            className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-secondary"
+                        >
+                            Read latest stories
+                        </Link>
+                        <Link
+                            href="/contact"
+                            className="inline-flex items-center justify-center rounded-full border border-default px-5 py-3 text-sm font-semibold text-primary transition-colors hover:border-hover hover:bg-muted/50"
+                        >
+                            Contact us
+                        </Link>
+                    </div>
                 </div>
             </section>
 
-            <section className="max-w-4xl mx-auto px-4 py-16">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-primary mb-4">Our Mission</h2>
-                    <p className="text-secondary text-lg leading-relaxed">
-                        Chainew bridges the gap between technology and society. We deliver thoughtful analysis
-                        on artificial intelligence, blockchain innovation, financial markets, and public policy.
-                        Our goal is to help readers understand not just what&apos;s happening in tech, but why it
-                        matters for the world around us.
+            <section className="mx-auto grid max-w-4xl gap-10 px-4 py-14 md:px-6 md:py-18 lg:grid-cols-[1.2fr_0.8fr]">
+                <div>
+                    <h2 className="text-2xl font-black text-primary md:text-3xl">What we focus on</h2>
+                    <p className="mt-4 max-w-2xl text-base leading-8 text-secondary">
+                        We track the areas where business, software, and public decision-making overlap. The goal is not more volume. The goal is better signal.
                     </p>
-                </div>
-            </section>
 
-            <section className="bg-muted py-16">
-                <div className="max-w-4xl mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-primary mb-8 text-center">What We Cover</h2>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        {coverage.map((item, index) => (
-                            <div
-                                key={item.name}
-                                className="bg-card rounded-xl p-6 flex items-start gap-4 animate-fadeInUp"
-                                style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
+                    <div className="mt-6 flex flex-wrap gap-3">
+                        {focusAreas.map((area) => (
+                            <span
+                                key={area}
+                                className="rounded-full border border-default bg-card px-4 py-2 text-sm font-semibold text-primary"
                             >
-                                <div className="p-3 rounded-lg bg-primary shrink-0">
-                                    <item.icon className="text-inverse" size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-primary">{item.name}</h3>
-                                    <p className="text-secondary text-sm">{item.desc}</p>
-                                </div>
+                                {area}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="rounded-3xl border border-default bg-card p-6">
+                    <h2 className="text-2xl font-black text-primary">How we work</h2>
+                    <div className="mt-5 space-y-4">
+                        {principles.map((principle) => (
+                            <div key={principle} className="border-b border-default pb-4 last:border-b-0 last:pb-0">
+                                <p className="text-sm leading-7 text-secondary md:text-base">{principle}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            <section className="max-w-4xl mx-auto px-4 py-16">
-                <h2 className="text-3xl font-bold text-primary mb-8 text-center">Our Values</h2>
-                <div className="grid md:grid-cols-3 gap-6">
-                    {[
-                        { title: "Accuracy First", desc: "We prioritize factual reporting and thorough research in every piece we publish." },
-                        { title: "Clear Analysis", desc: "Complex topics explained in accessible language without sacrificing depth." },
-                        { title: "Forward Thinking", desc: "We explore emerging trends and their implications for business and society." },
-                    ].map((value, index) => (
-                        <div
-                            key={value.title}
-                            className="bg-card border border-default rounded-xl p-6 hover-lift animate-fadeInUp"
-                            style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
-                        >
-                            <h3 className="text-xl font-bold text-primary mb-2">{value.title}</h3>
-                            <p className="text-secondary">{value.desc}</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section className="bg-muted py-16">
-                <div className="max-w-4xl mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-primary mb-8 text-center">Our Team</h2>
-                    <div className="flex justify-center">
-                        {team.map((member, index) => (
-                            <div
-                                key={member.name}
-                                className="bg-card border border-default rounded-xl p-6 hover-lift animate-fadeInUp max-w-md"
-                                style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
-                            >
-                                <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-inverse text-xl font-bold mb-4">
-                                    {member.name.split(' ').map(n => n[0]).join('')}
-                                </div>
-                                <h3 className="text-lg font-bold text-primary">{member.name}</h3>
-                                <p className="text-accent text-sm mb-2">{member.role}</p>
-                                <p className="text-secondary text-sm">{member.bio}</p>
-                            </div>
-                        ))}
+            <section className="border-t border-default bg-card">
+                <div className="mx-auto max-w-4xl px-4 py-14 md:px-6 md:py-18">
+                    <h2 className="text-2xl font-black text-primary md:text-3xl">Why this exists</h2>
+                    <div className="mt-5 space-y-5 text-base leading-8 text-secondary">
+                        <p>
+                            Too much coverage is fast but forgettable. Chainew aims to be readable, direct, and useful for people who want to understand what changed and why it matters.
+                        </p>
+                        <p>
+                            That means concise writing, stronger editorial judgment, and a quieter design that keeps attention on the reporting.
+                        </p>
                     </div>
                 </div>
             </section>
