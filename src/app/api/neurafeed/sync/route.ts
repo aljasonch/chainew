@@ -38,23 +38,7 @@ function isCronAuthorized(request: NextRequest): boolean {
     return authHeader === `Bearer ${cronSecret}`;
 }
 
-// ──────────────────────────────────────────────
-// Handler
-// ──────────────────────────────────────────────
-
-export async function POST(request: NextRequest) {
-    // Accept either cron secret OR admin session
-    const cronOk = isCronAuthorized(request);
-    if (!cronOk) {
-        const session = await auth();
-        if (!session || session.user.role !== "admin") {
-            return NextResponse.json(
-                { success: false, error: "Unauthorized" },
-                { status: 401 }
-            );
-        }
-    }
-
+async function runNeuraFeedSync() {
     // 1. Fetch latest article from NeuraFeed
     const nfArticle = await fetchLatestNeuraFeedArticle();
     if (!nfArticle) {
@@ -67,8 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Safety check: skip stale articles (older than 7 days)
-    const articleAge =
-        Date.now() - new Date(nfArticle.createdAt).getTime();
+    const articleAge = Date.now() - new Date(nfArticle.createdAt).getTime();
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
     if (articleAge > sevenDaysMs) {
         return NextResponse.json({
@@ -81,7 +64,6 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Deduplication: compare the live article's ID against what we last imported.
-    //    This avoids a full insert attempt when there is nothing new.
     const lastImported = await getLatestNeuraFeedImport();
 
     if (lastImported?.neuraFeedId && lastImported.neuraFeedId === nfArticle.id) {
@@ -95,8 +77,7 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    // 4. Secondary dedup: also check by neuraFeedId in case there are
-    //    older articles with a matching ID that aren't the most recent.
+    // 4. Secondary dedup: also check by neuraFeedId in case there are older matches.
     const existingById = await findArticleByNeuraFeedId(nfArticle.id);
     if (existingById) {
         return NextResponse.json({
@@ -109,17 +90,16 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    // 4. Get (or create) the NeuraFeed system user
+    // 5. Get (or create) the NeuraFeed system user
     const author = await getOrCreateNeuraFeedUser();
 
-    // 5. Transform NeuraFeed → Chainew article shape
+    // 6. Transform NeuraFeed → Chainew article shape
     const category = detectCategory(nfArticle.topic, nfArticle.title);
     const slug = buildSlug(nfArticle.title, nfArticle.createdAt);
     const sources = parseNeuraFeedSources(nfArticle.sources);
-    // article field is HTML — sanitize markdown residue, then store in content_html
     const content_html = sanitizeNeuraFeedHtml(nfArticle.article);
 
-    // 6. Insert into Firestore
+    // 7. Insert into Firestore
     let article;
     try {
         article = await createArticle({
@@ -151,7 +131,6 @@ export async function POST(request: NextRequest) {
             neuraFeedId: nfArticle.id,
         });
     } catch (err: unknown) {
-        // Handle duplicate import guard (race condition between two cron fires)
         if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "already-exists") {
             return NextResponse.json({
                 success: true,
@@ -167,7 +146,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    // 7. Discord broadcast
+    // 8. Discord broadcast
     await sendDiscordPublishNotification({
         title: article.title,
         slug: article.slug,
@@ -198,9 +177,33 @@ export async function POST(request: NextRequest) {
     );
 }
 
+// ──────────────────────────────────────────────
+// Handler
+// ──────────────────────────────────────────────
+
+export async function POST(request: NextRequest) {
+    // Accept either cron secret OR admin session
+    const cronOk = isCronAuthorized(request);
+    if (!cronOk) {
+        const session = await auth();
+        if (!session || session.user.role !== "admin") {
+            return NextResponse.json(
+                { success: false, error: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+    }
+
+    return runNeuraFeedSync();
+}
+
 // Allow GET for Vercel Cron health-check (returns last imported article info)
 export async function GET(request: NextRequest) {
     const cronOk = isCronAuthorized(request);
+    if (cronOk) {
+        return runNeuraFeedSync();
+    }
+
     if (!cronOk) {
         const session = await auth();
         if (!session) {
