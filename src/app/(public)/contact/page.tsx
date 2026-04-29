@@ -57,18 +57,29 @@ export default function ContactPage() {
                     <h2 className="text-2xl font-black text-primary md:text-3xl">Where to reach us</h2>
                     <div className="mt-6 space-y-4">
                         {contactWays.map((item) => (
-                            <div key={item.title} className="rounded-3xl border border-default bg-card p-6">
-                                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">{item.title}</p>
-                                <p className="mt-3 text-sm leading-7 text-secondary md:text-base">{item.description}</p>
-                                <a
-                                    href={item.href}
-                                    target={item.href.startsWith("http") ? "_blank" : undefined}
-                                    rel={item.href.startsWith("http") ? "noreferrer" : undefined}
-                                    className="mt-4 inline-flex font-semibold text-primary underline decoration-default underline-offset-4 hover:text-secondary"
-                                >
-                                    {item.value}
-                                </a>
-                            </div>
+                        <div key={item.title} className="rounded-3xl border border-default bg-card p-6">
+                            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">
+                            {item.title}
+                            </p>
+                            <p className="mt-3 text-sm leading-7 text-secondary md:text-base">
+                            {item.description}
+                            </p>
+
+                            {item.href ? (
+                            <a
+                                href={item.href}
+                                target={item.href.startsWith("http") ? "_blank" : undefined}
+                                rel={item.href.startsWith("http") ? "noreferrer" : undefined}
+                                className="mt-4 inline-flex font-semibold text-primary underline decoration-default underline-offset-4 hover:text-secondary"
+                            >
+                                {item.value}
+                            </a>
+                            ) : (
+                            <span className="mt-4 inline-flex font-semibold text-muted">
+                                {item.value}
+                            </span>
+                            )}
+                        </div>
                         ))}
                     </div>
                 </div>
