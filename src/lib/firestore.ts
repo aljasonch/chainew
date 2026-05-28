@@ -137,6 +137,10 @@ const uniqueNeuraFeedIdsCollection = adminDb
     .collection("uniqueNeuraFeedIds")
     .withConverter<UniqueDoc>(makeConverter<UniqueDoc>());
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const TRENDING_LOOKBACK_DAYS = 7;
+const VIEW_LOG_RETENTION_DAYS = TRENDING_LOOKBACK_DAYS + 1;
+
 function makeError(message: string, code: string): Error & { code: string } {
     const error = new Error(message) as Error & { code: string };
     error.code = code;
@@ -1228,13 +1232,66 @@ export async function listPublishedForLatest(page: number, limit: number): Promi
 }
 
 export async function listPublishedForTrending(page: number, limit: number): Promise<{ items: IArticle[]; total: number }> {
-    return listArticles({
-        page,
-        limit,
-        status: "published",
-        orderBy: "views",
-        orderDirection: "desc",
-    });
+    const safePage = Math.max(1, page);
+    const safeLimit = Math.max(1, limit);
+    const offset = (safePage - 1) * safeLimit;
+    const since = new Date(Date.now() - TRENDING_LOOKBACK_DAYS * DAY_MS);
+
+    const viewsSnap = await viewsCollection
+        .where("createdAt", ">=", since)
+        .orderBy("createdAt", "desc")
+        .get();
+
+    const weeklyViewsByArticleId = new Map<string, number>();
+    for (const doc of viewsSnap.docs) {
+        const view = doc.data();
+        weeklyViewsByArticleId.set(
+            view.articleId,
+            (weeklyViewsByArticleId.get(view.articleId) ?? 0) + 1
+        );
+    }
+
+    if (weeklyViewsByArticleId.size === 0) {
+        return { items: [], total: 0 };
+    }
+
+    const rankedArticles = (
+        await Promise.all(
+            Array.from(weeklyViewsByArticleId.keys()).map(async (articleId): Promise<IArticle | null> => {
+                const snapshot = await articlesCollection.doc(articleId).get();
+                if (!snapshot.exists) {
+                    return null;
+                }
+
+                const article = mapArticle(snapshot.id, snapshot.data() as ArticleDoc);
+                if (article.status !== "published") {
+                    return null;
+                }
+
+                return {
+                    ...article,
+                    weeklyViews: weeklyViewsByArticleId.get(articleId) ?? 0,
+                };
+            })
+        )
+    )
+        .filter((article): article is IArticle => Boolean(article))
+        .sort((a, b) => {
+            const viewsDiff = (b.weeklyViews ?? 0) - (a.weeklyViews ?? 0);
+            if (viewsDiff !== 0) {
+                return viewsDiff;
+            }
+
+            return (
+                (b.publishedAt?.getTime() ?? 0) -
+                (a.publishedAt?.getTime() ?? 0)
+            );
+        });
+
+    return {
+        total: rankedArticles.length,
+        items: rankedArticles.slice(offset, offset + safeLimit),
+    };
 }
 
 export async function listPublishedForFeeds(limit = 50): Promise<IArticle[]> {
@@ -1297,7 +1354,7 @@ export async function trackArticleView(articleId: string, ipAddress: string): Pr
 
     const now = new Date();
     const dayKey = dayKeyUTC(now);
-    const expireAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const expireAt = new Date(now.getTime() + VIEW_LOG_RETENTION_DAYS * DAY_MS);
 
     const viewId = makeDailyViewId(articleId, ipAddress, dayKey);
     const viewRef = viewsCollection.doc(viewId);

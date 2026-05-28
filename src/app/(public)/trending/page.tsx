@@ -60,7 +60,7 @@ export default async function TrendingPage({ searchParams }: TrendingPageProps) 
                         </h1>
                     </div>
                     <p className="text-muted text-lg animate-fadeInUp stagger-1" style={{ animationFillMode: 'forwards' }}>
-                        The most popular stories based on reader views
+                        The most popular stories based on reader views from the last 7 days
                     </p>
                 </div>
             </section>
@@ -92,7 +92,7 @@ export default async function TrendingPage({ searchParams }: TrendingPageProps) 
                                                 <Badge variant="accent">{featuredArticle.category}</Badge>
                                                 <span className="text-sm text-secondary flex items-center gap-1">
                                                     <Eye size={14} />
-                                                    {featuredArticle.views?.toLocaleString() || 0} views
+                                                    {featuredArticle.weeklyViews?.toLocaleString() || 0} views this week
                                                 </span>
                                             </div>
 
@@ -145,7 +145,7 @@ export default async function TrendingPage({ searchParams }: TrendingPageProps) 
                                                 <Badge variant="accent">{article.category}</Badge>
                                                 <span className="text-sm text-secondary flex items-center gap-1">
                                                     <Eye size={12} />
-                                                    {article.views?.toLocaleString() || 0}
+                                                    {article.weeklyViews?.toLocaleString() || 0}
                                                 </span>
                                             </div>
 

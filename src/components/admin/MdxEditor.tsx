@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { reactMarkdownComponents } from "@/components/markdown/components";
+import { normalizeMarkdownListMarkers } from "@/lib/markdown";
 
 interface MdxEditorProps {
     value: string;
@@ -61,7 +62,7 @@ export function MdxEditor({ value, onChange, className }: MdxEditorProps) {
                         remarkPlugins={[remarkGfm]}
                         components={reactMarkdownComponents}
                     >
-                        {value}
+                        {normalizeMarkdownListMarkers(value)}
                     </ReactMarkdown>
                 </div>
             )}

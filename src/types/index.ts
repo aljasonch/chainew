@@ -52,6 +52,7 @@ export interface IArticle {
     seo: IArticleSeo;
     publishedAt?: Date;
     views?: number;
+    weeklyViews?: number;
     source?: ArticleOrigin;
     neuraFeedId?: string;
     searchTokens?: string[];

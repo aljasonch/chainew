@@ -10,6 +10,7 @@ import { compileMDX } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { mdxComponents } from "@/components/markdown/components";
 import { sanitizeNeuraFeedHtml } from "@/lib/neurafeed";
+import { normalizeMarkdownListMarkers } from "@/lib/markdown";
 import { getArticleBySlug, trackArticleView as trackFirestoreArticleView } from "@/lib/firestore";
 
 interface PageProps {
@@ -109,7 +110,7 @@ export default async function ArticlePage({ params }: PageProps) {
     let content: React.ReactNode = null;
     if (!isNeuraFeed && article.content_mdx) {
         const compiled = await compileMDX({
-            source: article.content_mdx || "",
+            source: normalizeMarkdownListMarkers(article.content_mdx || ""),
             options: {
                 mdxOptions: {
                     remarkPlugins: [remarkGfm],

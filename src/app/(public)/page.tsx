@@ -231,7 +231,7 @@ export default async function HomePage() {
                   </div>
 
                   <p className="mt-2 text-xs font-medium text-neutral-500 md:text-sm">
-                    {(article.views ?? 0).toLocaleString()} views
+                    {(article.weeklyViews ?? 0).toLocaleString()} views this week
                   </p>
 
                   <h3 className="mt-2 text-sm font-semibold leading-snug text-neutral-900 transition-colors group-hover:text-neutral-700 md:text-base">
