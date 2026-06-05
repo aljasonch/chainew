@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate file size (150KB max)
-        const MAX_SIZE = 150 * 1024; // 150KB
+        // Validate file size (500KB max)
+        const MAX_SIZE = 500 * 1024; // 500KB
         if (file.size > MAX_SIZE) {
             return NextResponse.json(
-                { success: false, error: "File size must be less than 150KB" },
+                { success: false, error: "File size must be less than 500KB" },
                 { status: 400 }
             );
         }

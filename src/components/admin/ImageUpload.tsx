@@ -31,8 +31,8 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
             return;
         }
 
-        if (file.size > 150 * 1024) {
-            setError("Image must be less than 150KB");
+        if (file.size > 500 * 1024) {
+            setError("Image must be less than 500KB");
             return;
         }
 
@@ -173,7 +173,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
                                     ? "Drop image here"
                                     : "Click or drag image to upload"}
                             </p>
-                            <p className="mt-1 text-xs text-zinc-400">PNG, JPG, WebP up to 150KB</p>
+                            <p className="mt-1 text-xs text-zinc-400">PNG, JPG, WebP up to 500KB</p>
                         </div>
                     )}
                 </label>
