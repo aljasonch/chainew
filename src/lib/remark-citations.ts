@@ -45,10 +45,12 @@ function replaceBareCitations(
 
 /**
  * For compileMDX (article page).
- * Converts citation references to <Citation n={N} /> JSX components.
+ * Converts citation references to <Citation n="N" /> JSX components.
  */
 export function preprocessCitations(source: string): string {
-    const toJsx = (num: number) => `<Citation n={${num}} />`;
+    // next-mdx-remote keeps literal attributes in its safe mode, but strips
+    // JavaScript attribute expressions such as n={8}.
+    const toJsx = (num: number) => `<Citation n="${num}" />`;
     return replaceBareCitations(
         replaceExplicitCitations(source, toJsx),
         toJsx
