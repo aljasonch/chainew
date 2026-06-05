@@ -8,7 +8,7 @@ import { ArrowLeft, Eye } from "lucide-react";
 import { headers } from "next/headers";
 import { compileMDX } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
-import { remarkCitations } from "@/lib/remark-citations";
+import { preprocessCitations } from "@/lib/remark-citations";
 import { mdxComponents } from "@/components/markdown/components";
 import { sanitizeNeuraFeedHtml } from "@/lib/neurafeed";
 import { normalizeMarkdownListMarkers } from "@/lib/markdown";
@@ -111,10 +111,10 @@ export default async function ArticlePage({ params }: PageProps) {
     let content: React.ReactNode = null;
     if (!isNeuraFeed && article.content_mdx) {
         const compiled = await compileMDX({
-            source: normalizeMarkdownListMarkers(article.content_mdx || ""),
+            source: preprocessCitations(normalizeMarkdownListMarkers(article.content_mdx || "")),
             options: {
                 mdxOptions: {
-                    remarkPlugins: [remarkGfm, remarkCitations],
+                    remarkPlugins: [remarkGfm],
                 },
             },
             components: mdxComponents,

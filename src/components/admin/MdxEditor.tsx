@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/Textarea";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { remarkCitations } from "@/lib/remark-citations";
+import rehypeRaw from "rehype-raw";
+import { preprocessCitations } from "@/lib/remark-citations";
 import { reactMarkdownComponents } from "@/components/markdown/components";
 import { normalizeMarkdownListMarkers } from "@/lib/markdown";
 
@@ -60,10 +61,11 @@ export function MdxEditor({ value, onChange, className }: MdxEditorProps) {
             ) : (
                 <div className="p-4 min-h-[400px] max-w-none prose">
                     <ReactMarkdown
-                        remarkPlugins={[remarkGfm, remarkCitations]}
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
                         components={reactMarkdownComponents}
                     >
-                        {normalizeMarkdownListMarkers(value)}
+                        {preprocessCitations(normalizeMarkdownListMarkers(value))}
                     </ReactMarkdown>
                 </div>
             )}

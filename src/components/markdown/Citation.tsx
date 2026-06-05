@@ -9,10 +9,11 @@ import type { ComponentPropsWithoutRef } from "react";
  *
  * Both render as a clickable [1] that scrolls to #src-1 in the sources list.
  */
-export function Citation({ n, ...rest }: { n: number } & ComponentPropsWithoutRef<"sup">) {
+export function Citation({ n, ...rest }: { n: number | string } & ComponentPropsWithoutRef<"sup">) {
+    const num = typeof n === "string" ? Number(n) : n;
     return (
         <sup className="citation" {...rest}>
-            <a href={`#src-${n}`}>[{n}]</a>
+            <a href={`#src-${num}`}>[{num}]</a>
         </sup>
     );
 }
