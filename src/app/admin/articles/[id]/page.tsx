@@ -452,7 +452,7 @@ export default function ArticleEditorPage({
                                 label="Paste JSON"
                                 value={importJson}
                                 onChange={(e) => setImportJson(e.target.value)}
-                                placeholder={`{\n  "title": "...",\n  "slug": "custom-url-slug",\n  "summary": "...",\n  "category": "Tech",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "# Heading\\n...",\n  "status": "draft",\n  "sources": [{"name":"...","url":"https://..."}],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": "",\n    "ogImagePublicId": ""\n  }\n}`}
+                                placeholder={`{\n  "title": "...",\n  "slug": "custom-url-slug",\n  "summary": "...",\n  "category": "Tech",\n  "tags": ["tag1", "tag2"],\n  "content_mdx": "Some fact.[^1] More text.[^2]\\n\\nOr HTML: fact.<sup>[1]</sup>",\n  "status": "draft",\n  "sources": [\n    {"name": "Source Name", "url": "https://example.com"},\n    {"name": "Another Source", "url": "https://example.org"}\n  ],\n  "seo": {\n    "metaTitle": "...",\n    "metaDescription": "...",\n    "ogImageUrl": "",\n    "ogImagePublicId": ""\n  }\n}\n\nCitations: use [^N] or <sup>[N]</sup> where N matches the source index (1-based).`}
                                 className="min-h-[180px]"
                                 spellCheck={false}
                             />

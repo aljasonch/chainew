@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/Textarea";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { remarkCitations } from "@/lib/remark-citations";
 import { reactMarkdownComponents } from "@/components/markdown/components";
 import { normalizeMarkdownListMarkers } from "@/lib/markdown";
 
@@ -53,13 +54,13 @@ export function MdxEditor({ value, onChange, className }: MdxEditorProps) {
                 <Textarea
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    placeholder="Write your article content in MDX format..."
+                    placeholder={"Write your article content in MDX format...\n\nCitations: use [^N] or <sup>[N]</sup> where N matches source index (1-based)."}
                     className="border-0 rounded-none min-h-[400px] focus:ring-0"
                 />
             ) : (
                 <div className="p-4 min-h-[400px] max-w-none prose">
                     <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
+                        remarkPlugins={[remarkGfm, remarkCitations]}
                         components={reactMarkdownComponents}
                     >
                         {normalizeMarkdownListMarkers(value)}

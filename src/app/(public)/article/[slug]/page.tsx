@@ -8,6 +8,7 @@ import { ArrowLeft, Eye } from "lucide-react";
 import { headers } from "next/headers";
 import { compileMDX } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
+import { remarkCitations } from "@/lib/remark-citations";
 import { mdxComponents } from "@/components/markdown/components";
 import { sanitizeNeuraFeedHtml } from "@/lib/neurafeed";
 import { normalizeMarkdownListMarkers } from "@/lib/markdown";
@@ -113,7 +114,7 @@ export default async function ArticlePage({ params }: PageProps) {
             source: normalizeMarkdownListMarkers(article.content_mdx || ""),
             options: {
                 mdxOptions: {
-                    remarkPlugins: [remarkGfm],
+                    remarkPlugins: [remarkGfm, remarkCitations],
                 },
             },
             components: mdxComponents,
@@ -219,7 +220,7 @@ export default async function ArticlePage({ params }: PageProps) {
                                 // Support both plain { name, url } objects stored in DB
                                 // and display citation numbers if available
                                 return (
-                                    <li key={index} className="flex items-start gap-2 text-sm">
+                                    <li key={index} id={`src-${index + 1}`} className="flex items-start gap-2 text-sm scroll-mt-24">
                                         <span className="text-blue-500 font-mono text-xs shrink-0 mt-0.5">
                                             [{index + 1}]
                                         </span>

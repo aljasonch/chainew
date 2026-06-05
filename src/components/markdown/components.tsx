@@ -1,5 +1,6 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import type { Components } from "react-markdown";
+import { Citation } from "./Citation";
 
 function cx(...classes: Array<string | undefined | false | null>) {
     return classes.filter(Boolean).join(" ");
@@ -166,6 +167,19 @@ export function MarkdownLi(props: ComponentPropsWithoutRef<"li">) {
     return <li {...rest} className={cx("my-1", className)} />;
 }
 
+/**
+ * Custom <sup> handler that detects citation pattern [N] and renders
+ * as a linked Citation component. Falls back to plain superscript otherwise.
+ */
+export function MarkdownSup({ children, ...rest }: ComponentPropsWithoutRef<"sup">) {
+    const text = typeof children === "string" ? children : "";
+    const match = text.match(/^\[(\d+)\]$/);
+    if (match) {
+        return <Citation n={Number(match[1])} {...rest} />;
+    }
+    return <sup {...rest}>{children}</sup>;
+}
+
 export const mdxComponents = {
     h1: MarkdownH1,
     h2: MarkdownH2,
@@ -174,6 +188,8 @@ export const mdxComponents = {
     a: MarkdownA,
     img: MarkdownImg,
     Callout: MarkdownCallout,
+    Citation,
+    sup: MarkdownSup,
     blockquote: MarkdownBlockquote,
     pre: MarkdownPre,
     code: (props: ComponentPropsWithoutRef<"code">) => (
@@ -189,7 +205,7 @@ export const mdxComponents = {
     td: MarkdownTd,
 };
 
-export const reactMarkdownComponents: Components & { Callout?: typeof MarkdownCallout } = {
+export const reactMarkdownComponents: Components & { Callout?: typeof MarkdownCallout; Citation?: typeof Citation } = {
     h1: MarkdownH1,
     h2: MarkdownH2,
     h3: MarkdownH3,
@@ -197,6 +213,8 @@ export const reactMarkdownComponents: Components & { Callout?: typeof MarkdownCa
     a: MarkdownA,
     img: MarkdownImg,
     Callout: MarkdownCallout,
+    Citation,
+    sup: MarkdownSup,
     blockquote: MarkdownBlockquote,
     pre: MarkdownPre,
     code: ({ children, className, ...props }) => {
