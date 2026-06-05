@@ -1,20 +1,50 @@
 /**
- * Preprocesses markdown/MDX content to convert [^N] citation references
- * into <sup>[N]</sup> HTML inline elements.
+ * Citation preprocessing utilities.
  *
- * remark-gfm v4 does NOT parse [^1] as footnoteReference — it stays as
- * plain text. Rather than fighting the AST, we do a simple string
- * replacement before the markdown is parsed. The <sup>[N]</sup> HTML is
- * then handled by the existing MarkdownSup component which detects the
- * [N] pattern and renders a linked Citation.
+ * remark-gfm v4 does NOT parse [^1] as footnoteReference, and
+ * @mdx-js/mdx compiles <sup> as raw HTML bypassing the components map.
+ * So we preprocess citation references before the markdown/MDX is parsed.
  *
- * Only transforms patterns where N is a positive integer.
- * Named references like [^note] are left untouched.
+ * Two functions for two different rendering engines:
+ * - preprocessCitationsForMdx → for compileMDX (@mdx-js/mdx)
+ * - preprocessCitationsForReactMarkdown → for ReactMarkdown
+ */
+
+/**
+ * For compileMDX (article page).
+ * Converts citation references to <Citation n={N} /> JSX components
+ * that resolve through the MDX components map.
  */
 export function preprocessCitations(source: string): string {
-    return source.replace(/\[\^(\d+)\]/g, (_match, digits: string) => {
-        const num = Number(digits);
-        if (!Number.isFinite(num) || num < 1) return _match;
-        return `<sup>[${num}]</sup>`;
-    });
+    return source
+        .replace(/\[\^(\d+)\]/g, (_match, digits: string) => {
+            const num = Number(digits);
+            if (!Number.isFinite(num) || num < 1) return _match;
+            return `<Citation n={${num}} />`;
+        })
+        .replace(/<sup>\[(\d+)\]<\/sup>/g, (_match, digits: string) => {
+            const num = Number(digits);
+            if (!Number.isFinite(num) || num < 1) return _match;
+            return `<Citation n={${num}} />`;
+        });
+}
+
+/**
+ * For ReactMarkdown (admin editor preview).
+ * Converts citation references to markdown links [[N]](#cite-N)
+ * that ReactMarkdown parses natively as <a> elements.
+ * The custom MarkdownA component detects #cite-N and renders as Citation.
+ */
+export function preprocessCitationsReactMarkdown(source: string): string {
+    return source
+        .replace(/\[\^(\d+)\]/g, (_match, digits: string) => {
+            const num = Number(digits);
+            if (!Number.isFinite(num) || num < 1) return _match;
+            return `[[${num}]](#cite-${num})`;
+        })
+        .replace(/<sup>\[(\d+)\]<\/sup>/g, (_match, digits: string) => {
+            const num = Number(digits);
+            if (!Number.isFinite(num) || num < 1) return _match;
+            return `[[${num}]](#cite-${num})`;
+        });
 }

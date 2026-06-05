@@ -61,8 +61,15 @@ export function MarkdownTd(props: ComponentPropsWithoutRef<"td">) {
 }
 
 export function MarkdownA(props: ComponentPropsWithoutRef<"a">) {
-    const { className, ...rest } = props;
-    return <a {...rest} className={cx("text-blue-600 underline", className)} />;
+    const { className, href, children, ...rest } = props;
+    // Detect citation links from preprocessCitationsReactMarkdown
+    if (typeof href === "string" && href.startsWith("#cite-")) {
+        const num = Number(href.replace("#cite-", ""));
+        if (Number.isFinite(num) && num >= 1) {
+            return <Citation n={num} />;
+        }
+    }
+    return <a {...rest} href={href} className={cx("text-blue-600 underline", className)}>{children}</a>;
 }
 
 export function MarkdownImg(props: ComponentPropsWithoutRef<"img">) {
