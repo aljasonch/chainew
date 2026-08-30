@@ -125,6 +125,7 @@ Notes:
 - Keep escaped newlines in FIREBASE_PRIVATE_KEY; runtime converts \n to real newlines.
 - Create a signed Cloudinary upload preset and manage folder/format/transformation settings there.
 - CRON_SECRET is required if you want secure automated calls to POST /api/neurafeed/sync.
+- APP_URL is required for the GitHub Actions workflow so it can call the live app endpoint.
 - MONGODB_URI is only needed if you are running the one-time migration script.
 
 ## Auth Flow
@@ -196,8 +197,9 @@ Vercel is the primary deployment target.
 
 1. Add all required environment variables in project settings.
 2. Deploy the application.
-3. Keep vercel.json cron enabled to trigger NeuraFeed sync at 0 2 * * * UTC.
-4. Set CRON_SECRET to protect cron-triggered sync endpoint access.
+3. Add the required repository secrets for the GitHub workflow: APP_URL and CRON_SECRET.
+4. Keep the GitHub Actions workflow enabled to trigger NeuraFeed sync every 6 hours.
+5. Set CRON_SECRET to protect cron-triggered sync endpoint access.
 
 ## Security
 
