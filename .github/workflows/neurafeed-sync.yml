@@ -24,7 +24,7 @@ jobs:
             exit 1
           fi
 
-          curl --fail --silent --show-error \
+          curl --fail --silent --show-error --location \
             -X POST \
             -H "Authorization: Bearer $CRON_SECRET" \
             "$APP_URL/api/neurafeed/sync"
