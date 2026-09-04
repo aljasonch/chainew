@@ -6,7 +6,8 @@
       "Bash(npm run *)",
       "Bash(node -e ' *)",
       "Bash(node --input-type=module -e ' *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "mcp__exa__web_search_exa"
     ]
   }
 }

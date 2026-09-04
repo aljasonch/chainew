@@ -13,10 +13,14 @@ import {
 } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebaseAdmin";
+import { currentWeekKeyUTC } from "@/lib/utils";
 import {
     ArticleOrigin,
     ArticleStatus,
     IArticle,
+    IArticleCoverCredit,
+    IArticleEmbed,
+    IArticleMedia,
     IArticleSeo,
     IArticleSource,
     IRevision,
@@ -68,8 +72,13 @@ interface ArticleDoc {
     seo: IArticleSeo;
     publishedAt?: Date | Timestamp;
     views: number;
+    weeklyViews: number;
+    weeklyViewsWeek: string;
     source: ArticleOrigin;
     neuraFeedId?: string;
+    media?: IArticleMedia[];
+    coverCredit?: IArticleCoverCredit;
+    embedMedia?: IArticleEmbed;
     searchTokens: string[];
     createdAt: Date | Timestamp;
     updatedAt: Date | Timestamp;
@@ -138,8 +147,7 @@ const uniqueNeuraFeedIdsCollection = adminDb
     .withConverter<UniqueDoc>(makeConverter<UniqueDoc>());
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const TRENDING_LOOKBACK_DAYS = 7;
-const VIEW_LOG_RETENTION_DAYS = TRENDING_LOOKBACK_DAYS + 1;
+const VIEW_LOG_RETENTION_DAYS = 8;
 
 function makeError(message: string, code: string): Error & { code: string } {
     const error = new Error(message) as Error & { code: string };
@@ -267,8 +275,13 @@ function mapArticle(id: string, data: ArticleDoc): IArticle {
         seo: data.seo,
         publishedAt: data.publishedAt ? toDate(data.publishedAt) : undefined,
         views: data.views ?? 0,
+        weeklyViews: data.weeklyViews ?? 0,
+        weeklyViewsWeek: data.weeklyViewsWeek ?? "",
         source: data.source,
         neuraFeedId: data.neuraFeedId,
+        media: data.media ?? [],
+        coverCredit: data.coverCredit,
+        embedMedia: data.embedMedia,
         searchTokens: data.searchTokens ?? [],
         categoryKey: data.categoryKey,
         tagsLower: data.tagsLower ?? [],
@@ -355,6 +368,82 @@ function normalizeSources(value: unknown): IArticleSource[] {
         .filter(Boolean) as IArticleSource[];
 }
 
+function normalizeMedia(value: unknown): IArticleMedia[] | undefined {
+    if (!Array.isArray(value)) {
+        return undefined;
+    }
+
+    const items = value
+        .map((item) => {
+            if (!item || typeof item !== "object") {
+                return null;
+            }
+
+            const m = item as Record<string, unknown>;
+            if (m.type !== "image" || typeof m.url !== "string" || !m.url) {
+                return null;
+            }
+            if (typeof m.id !== "string" || !m.id) {
+                return null;
+            }
+
+            const afterSection = Number(m.afterSection);
+            return {
+                id: m.id,
+                type: "image",
+                url: m.url,
+                ...(typeof m.title === "string" && m.title ? { title: m.title } : {}),
+                ...(typeof m.caption === "string" && m.caption ? { caption: m.caption } : {}),
+                ...(typeof m.sourceName === "string" && m.sourceName ? { sourceName: m.sourceName } : {}),
+                ...(typeof m.sourceUrl === "string" && m.sourceUrl ? { sourceUrl: m.sourceUrl } : {}),
+                afterSection: Number.isFinite(afterSection) && afterSection >= 0 ? Math.floor(afterSection) : 0,
+            };
+        })
+        .filter(Boolean) as IArticleMedia[];
+
+    return items.length > 0 ? items : undefined;
+}
+
+function normalizeCoverCredit(value: unknown): IArticleCoverCredit | undefined {
+    if (!value || typeof value !== "object") {
+        return undefined;
+    }
+
+    const credit = value as { name?: unknown; url?: unknown };
+    const name = typeof credit.name === "string" ? cleanText(credit.name) : "";
+    const url = typeof credit.url === "string" ? cleanText(credit.url) : "";
+    if (!name && !url) {
+        return undefined;
+    }
+
+    return {
+        ...(name ? { name } : {}),
+        ...(url ? { url } : {}),
+    };
+}
+
+function normalizeEmbed(value: unknown): IArticleEmbed | undefined {
+    if (!value || typeof value !== "object") {
+        return undefined;
+    }
+
+    const embed = value as { type?: unknown; id?: unknown; title?: unknown };
+    if (embed.type !== "youtube" || typeof embed.id !== "string") {
+        return undefined;
+    }
+    if (!/^[\w-]{11}$/.test(embed.id)) {
+        return undefined;
+    }
+
+    return {
+        type: "youtube",
+        id: embed.id,
+        ...(typeof embed.title === "string" && embed.title.trim()
+            ? { title: embed.title.trim().slice(0, 200) }
+            : {}),
+    };
+}
+
 function normalizeSeo(value: unknown): IArticleSeo {
     const data = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 
@@ -420,6 +509,9 @@ export interface CreateArticleInput {
     views?: number;
     source?: ArticleOrigin;
     neuraFeedId?: string;
+    media?: IArticleMedia[];
+    coverCredit?: IArticleCoverCredit;
+    embedMedia?: IArticleEmbed;
 }
 
 function buildArticleDoc(input: CreateArticleInput, now: Date): ArticleDoc {
@@ -435,6 +527,9 @@ function buildArticleDoc(input: CreateArticleInput, now: Date): ArticleDoc {
         status === "published"
             ? parsePublishedAt(input.publishedAt) ?? now
             : parsePublishedAt(input.publishedAt);
+    const media = normalizeMedia(input.media);
+    const coverCredit = normalizeCoverCredit(input.coverCredit);
+    const embedMedia = normalizeEmbed(input.embedMedia);
 
     return {
         title,
@@ -456,8 +551,13 @@ function buildArticleDoc(input: CreateArticleInput, now: Date): ArticleDoc {
         seo,
         publishedAt,
         views: Number(input.views ?? 0),
+        weeklyViews: 0,
+        weeklyViewsWeek: "",
         source: normalizeArticleSource(input.source),
         ...(input.neuraFeedId ? { neuraFeedId: cleanText(input.neuraFeedId) } : {}),
+        ...(media && media.length > 0 ? { media } : {}),
+        ...(coverCredit ? { coverCredit } : {}),
+        ...(embedMedia ? { embedMedia } : {}),
         searchTokens: buildSearchTokens(title, subtitle, summary, category, ...tags),
         createdAt: now,
         updatedAt: now,
@@ -1167,30 +1267,26 @@ export async function getHomePageData(): Promise<{
     categoryCounts: Record<string, number>;
     neuraFeedArticle: IArticle | null;
 }> {
-    const [recentSnap, countsSnap] = await Promise.all([
-        articlesCollection.orderBy("publishedAt", "desc").limit(50).get(),
-        articlesCollection.where("status", "==", "published").get(),
-    ]);
+    // Single indexed query (status + publishedAt desc). Previously this
+    // fetched the entire published collection on every homepage hit,
+    // which exhausted the Firestore read quota.
+    const recentSnap = await articlesCollection
+        .where("status", "==", "published")
+        .orderBy("publishedAt", "desc")
+        .limit(12)
+        .get();
 
-    const recentArticles = recentSnap.docs
-        .map((doc) => mapArticle(doc.id, doc.data()))
-        .filter((article) => article.status === "published");
+    const recentArticles = recentSnap.docs.map((doc) => mapArticle(doc.id, doc.data()));
 
     const featuredArticles = recentArticles.slice(0, 4);
     const latestArticles = recentArticles.slice(4, 12);
     const neuraFeedArticle =
         recentArticles.find((article) => article.source === "neurafeed") ?? null;
 
-    const categoryCounts: Record<string, number> = {};
-    for (const doc of countsSnap.docs) {
-        const article = doc.data();
-        categoryCounts[article.category] = (categoryCounts[article.category] ?? 0) + 1;
-    }
-
     return {
         featuredArticles,
         latestArticles,
-        categoryCounts,
+        categoryCounts: {},
         neuraFeedArticle,
     };
 }
@@ -1235,63 +1331,102 @@ export async function listPublishedForTrending(page: number, limit: number): Pro
     const safePage = Math.max(1, page);
     const safeLimit = Math.max(1, limit);
     const offset = (safePage - 1) * safeLimit;
-    const since = new Date(Date.now() - TRENDING_LOOKBACK_DAYS * DAY_MS);
+    const weekKey = currentWeekKeyUTC();
 
-    const viewsSnap = await viewsCollection
-        .where("createdAt", ">=", since)
-        .orderBy("createdAt", "desc")
-        .get();
+    // Ranks by the denormalized weeklyViews counter — a single indexed
+    // query instead of scanning the whole views collection. Requires the
+    // (status ASC, weeklyViews DESC) composite index in firestore.indexes.json.
+    // Counters from a previous week are coerced to 0 (the daily sync also
+    // resets them via resetStaleWeeklyViews).
+    const base = articlesCollection.where("status", "==", "published");
+    const [countSnap, itemsSnap] = await Promise.all([
+        base.count().get(),
+        base.orderBy("weeklyViews", "desc").limit(offset + safeLimit).get(),
+    ]);
 
-    const weeklyViewsByArticleId = new Map<string, number>();
-    for (const doc of viewsSnap.docs) {
-        const view = doc.data();
-        weeklyViewsByArticleId.set(
-            view.articleId,
-            (weeklyViewsByArticleId.get(view.articleId) ?? 0) + 1
-        );
-    }
-
-    if (weeklyViewsByArticleId.size === 0) {
-        return { items: [], total: 0 };
-    }
-
-    const rankedArticles = (
-        await Promise.all(
-            Array.from(weeklyViewsByArticleId.keys()).map(async (articleId): Promise<IArticle | null> => {
-                const snapshot = await articlesCollection.doc(articleId).get();
-                if (!snapshot.exists) {
-                    return null;
-                }
-
-                const article = mapArticle(snapshot.id, snapshot.data() as ArticleDoc);
-                if (article.status !== "published") {
-                    return null;
-                }
-
-                return {
-                    ...article,
-                    weeklyViews: weeklyViewsByArticleId.get(articleId) ?? 0,
-                };
-            })
-        )
-    )
-        .filter((article): article is IArticle => Boolean(article))
+    const rankedArticles = itemsSnap.docs
+        .map((doc) => {
+            const article = mapArticle(doc.id, doc.data());
+            const current = (article.weeklyViewsWeek ?? "") === weekKey;
+            return { ...article, weeklyViews: current ? (article.weeklyViews ?? 0) : 0 };
+        })
         .sort((a, b) => {
             const viewsDiff = (b.weeklyViews ?? 0) - (a.weeklyViews ?? 0);
             if (viewsDiff !== 0) {
                 return viewsDiff;
             }
 
-            return (
-                (b.publishedAt?.getTime() ?? 0) -
-                (a.publishedAt?.getTime() ?? 0)
-            );
+            const aTime = a.publishedAt instanceof Date ? a.publishedAt.getTime() : new Date(a.publishedAt ?? 0).getTime();
+            const bTime = b.publishedAt instanceof Date ? b.publishedAt.getTime() : new Date(b.publishedAt ?? 0).getTime();
+            return bTime - aTime;
         });
 
     return {
-        total: rankedArticles.length,
+        total: countSnap.data().count,
         items: rankedArticles.slice(offset, offset + safeLimit),
     };
+}
+
+/**
+ * Deletes view-log docs older than the retention window, in batches.
+ * Replaces the billing-gated Firestore TTL policy: same effect
+ * (bounded views collection), using only free-tier delete quota.
+ * Safe to run daily; failures must never break the caller.
+ */
+export async function pruneOldViews(maxBatches = 5): Promise<number> {
+    const cutoff = new Date(Date.now() - VIEW_LOG_RETENTION_DAYS * DAY_MS);
+    let deleted = 0;
+
+    for (let batch = 0; batch < maxBatches; batch++) {
+        const snap = await viewsCollection
+            .where("createdAt", "<", cutoff)
+            .limit(500)
+            .get();
+
+        if (snap.empty) {
+            break;
+        }
+
+        const writer = adminDb.batch();
+        for (const doc of snap.docs) {
+            writer.delete(doc.ref);
+        }
+        await writer.commit();
+        deleted += snap.size;
+    }
+
+    return deleted;
+}
+
+/**
+ * Zeroes weeklyViews counters left over from a previous calendar week.
+ * Runs inside the daily NeuraFeed sync so no scheduler is needed.
+ * Bounded by the number of articles that ever received views.
+ */
+export async function resetStaleWeeklyViews(): Promise<number> {
+    const weekKey = currentWeekKeyUTC();
+    const snap = await articlesCollection.where("weeklyViews", ">", 0).get();
+
+    const stale = snap.docs.filter((doc) => {
+        const data = doc.data();
+        return (data.weeklyViewsWeek ?? "") !== weekKey;
+    });
+
+    if (stale.length === 0) {
+        return 0;
+    }
+
+    let reset = 0;
+    for (let i = 0; i < stale.length; i += 500) {
+        const writer = adminDb.batch();
+        for (const doc of stale.slice(i, i + 500)) {
+            writer.update(doc.ref, { weeklyViews: 0, weeklyViewsWeek: weekKey });
+        }
+        await writer.commit();
+        reset += Math.min(500, stale.length - i);
+    }
+
+    return reset;
 }
 
 export async function listPublishedForFeeds(limit = 50): Promise<IArticle[]> {
@@ -1312,10 +1447,11 @@ export async function listPublishedCategories(): Promise<string[]> {
     ).sort((a, b) => a.localeCompare(b));
 }
 
-export async function listPublishedForSitemap(): Promise<IArticle[]> {
+export async function listPublishedForSitemap(limit = 5000): Promise<IArticle[]> {
     const snapshot = await articlesCollection
         .where("status", "==", "published")
         .orderBy("updatedAt", "desc")
+        .limit(limit)
         .get();
 
     return snapshot.docs.map((doc) => mapArticle(doc.id, doc.data()));
@@ -1360,16 +1496,24 @@ export async function trackArticleView(articleId: string, ipAddress: string): Pr
     const viewRef = viewsCollection.doc(viewId);
     const articleRef = articlesCollection.doc(articleId);
 
-    await adminDb.runTransaction(async (tx) => {
+    // The fresh count comes straight out of the transaction snapshot —
+    // no extra getArticleById read needed afterwards. The weekly counter
+    // rides along in the same article write (zero extra writes).
+    const result = await adminDb.runTransaction(async (tx) => {
         const [viewSnap, articleSnap] = await Promise.all([tx.get(viewRef), tx.get(articleRef)]);
 
         if (!articleSnap.exists) {
             throw makeError("Article not found", "not-found");
         }
 
+        const data = articleSnap.data() as ArticleDoc;
+        const baseViews = data.views ?? 0;
         if (viewSnap.exists) {
-            return;
+            return { views: baseViews };
         }
+
+        const weekKey = currentWeekKeyUTC(now);
+        const sameWeek = (data.weeklyViewsWeek ?? "") === weekKey;
 
         tx.set(viewRef, {
             articleId,
@@ -1381,12 +1525,15 @@ export async function trackArticleView(articleId: string, ipAddress: string): Pr
 
         tx.update(articleRef, {
             views: FieldValue.increment(1),
+            weeklyViews: sameWeek ? FieldValue.increment(1) : 1,
+            weeklyViewsWeek: weekKey,
             updatedAt: now,
         });
+
+        return { views: baseViews + 1 };
     });
 
-    const article = await getArticleById(articleId);
-    return article?.views ?? null;
+    return result.views;
 }
 
 export async function getLatestNeuraFeedImport(): Promise<IArticle | null> {

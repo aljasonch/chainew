@@ -26,6 +26,28 @@ export interface IArticleSource {
     url: string;
 }
 
+export interface IArticleMedia {
+    id: string;
+    type: string;
+    url: string;
+    title?: string;
+    caption?: string;
+    sourceName?: string;
+    sourceUrl?: string;
+    afterSection: number;
+}
+
+export interface IArticleCoverCredit {
+    name?: string;
+    url?: string;
+}
+
+export interface IArticleEmbed {
+    type: string;
+    id: string;
+    title?: string;
+}
+
 export interface IArticleSeo {
     metaTitle: string;
     metaDescription: string;
@@ -53,8 +75,12 @@ export interface IArticle {
     publishedAt?: Date;
     views?: number;
     weeklyViews?: number;
+    weeklyViewsWeek?: string;
     source?: ArticleOrigin;
     neuraFeedId?: string;
+    media?: IArticleMedia[];
+    coverCredit?: IArticleCoverCredit;
+    embedMedia?: IArticleEmbed;
     searchTokens?: string[];
     categoryKey?: string;
     tagsLower?: string[];

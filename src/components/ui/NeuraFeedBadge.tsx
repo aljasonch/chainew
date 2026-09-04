@@ -14,7 +14,7 @@ export function NeuraFeedBadge({ className, size = "sm" }: NeuraFeedBadgeProps) 
         <span
             className={cn(
                 "inline-flex items-center gap-1 rounded-full font-semibold tracking-wide",
-                "bg-cyan-500/15 text-cyan-600 border border-cyan-500/30",
+                "bg-cyan-500/15 text-cyan-700 border border-cyan-500/30 dark:text-cyan-300",
                 size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs",
                 className
             )}

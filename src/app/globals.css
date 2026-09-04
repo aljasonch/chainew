@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
+
   --color-primary: #1B3C53;
   --color-secondary: #234C6A;
   --color-accent: #456882;
@@ -28,10 +30,53 @@
   --color-primary-hover: #234C6A;
   --color-secondary-hover: #1B3C53;
   --color-accent-hover: #234C6A;
+
+  /* Broadsheet surfaces — shared by light & dark */
+  --paper: #ffffff;
+  --ink: #171717;
+  --ink-2: #404040;
+  --ink-3: #737373;
+  --faint: #fafafa;
+  --fill: #f5f5f5;
+  --hairline: #e5e5e5;
+  --rule: #111111;
+  --link: #3b82f6;
+  --link-hover: #2563eb;
+  --zebra: rgba(0, 0, 0, 0.025);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --color-text-primary: #cfdfe9;
+    --color-text-secondary: #9db8c9;
+    --color-text-muted: #9a978f;
+
+    --color-bg-primary: #141412;
+    --color-bg-secondary: #232220;
+    --color-bg-card: #1b1b19;
+
+    --color-border: #2c2b27;
+    --color-border-hover: #4a4842;
+
+    --paper: #141412;
+    --ink: #ece9e2;
+    --ink-2: #b9b5ab;
+    --ink-3: #8f8b83;
+    --faint: #1b1b19;
+    --fill: #232220;
+    --hairline: #2c2b27;
+    --rule: #ece9e2;
+    --link: #93c5fd;
+    --link-hover: #bfdbfe;
+    --zebra: rgba(255, 255, 255, 0.04);
+  }
 }
 
 @theme {
   --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), Georgia, "Times New Roman", serif;
 }
 
 body {
@@ -40,11 +85,11 @@ body {
 }
 
 .text-primary {
-  color: var(--color-primary);
+  color: var(--color-text-primary);
 }
 
 .text-secondary {
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 .text-accent {
@@ -194,19 +239,19 @@ body {
 }
 
 .btn-outline {
-  border: 2px solid var(--color-primary);
+  border: 2px solid var(--color-text-primary);
   background-color: var(--color-bg-card);
-  color: var(--color-primary);
+  color: var(--color-text-primary);
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .btn-outline:hover {
   background-color: var(--color-muted);
-  border-color: var(--color-secondary);
+  border-color: var(--color-text-secondary);
 }
 
 .btn-ghost {
-  color: var(--color-primary);
+  color: var(--color-text-primary);
   background-color: transparent;
   transition: background-color 0.2s ease;
 }
@@ -606,6 +651,26 @@ body {
   font-size: 0.875em;
 }
 
+@media (prefers-color-scheme: dark) {
+  .prose a {
+    color: var(--link);
+  }
+
+  .prose a:hover {
+    color: var(--link-hover);
+  }
+
+  .prose blockquote {
+    border-left-color: var(--hairline);
+  }
+
+  .prose pre,
+  .prose code {
+    background: var(--fill);
+    color: var(--ink);
+  }
+}
+
 .prose img {
   max-width: 100%;
   height: auto;
@@ -662,7 +727,6 @@ body {
 .prose li,
 .prose blockquote {
   max-width: none;
-  text-align: justify;
 }
 
 /* Additional utility classes for components */
@@ -748,12 +812,23 @@ body {
 /* Inline citation superscript — the one thing prose doesn't style */
 .neurafeed-article-body sup {
   font-size: 0.65em;
-  color: #3b82f6;
+  color: var(--link);
   opacity: 0.85;
   vertical-align: super;
   line-height: 0;
   margin-left: 1px;
   font-weight: 600;
+}
+
+.neurafeed-article-body sup.citation a {
+  color: var(--link);
+  text-decoration: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.neurafeed-article-body sup.citation a:hover {
+  text-decoration: underline;
+  color: var(--link-hover);
 }
 
 /* ──────────────────────────────────────────────
@@ -772,7 +847,7 @@ body {
 
 .prose .citation a,
 .prose sup.citation a {
-  color: #3b82f6;
+  color: var(--link);
   text-decoration: none;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
@@ -780,5 +855,425 @@ body {
 .prose .citation a:hover,
 .prose sup.citation a:hover {
   text-decoration: underline;
-  color: #2563eb;
+  color: var(--link-hover);
+}
+
+/* ──────────────────────────────────────────────
+   Chainew broadsheet system — plain editorial type,
+   hairline rules, no gradients / pills / lift.
+────────────────────────────────────────────── */
+
+.font-display {
+  font-family: var(--font-source-serif), Georgia, "Times New Roman", serif;
+}
+
+.kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.kicker a:hover {
+  color: var(--ink);
+}
+
+.rule-double {
+  border-top: 3px solid var(--rule);
+  border-bottom: 1px solid var(--hairline);
+  height: 5px;
+}
+
+.headline-link {
+  text-decoration: none;
+}
+
+.headline-link:hover h1,
+.headline-link:hover h2,
+.headline-link:hover h3 {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.article-body {
+  font-family: var(--font-source-serif), Georgia, "Times New Roman", serif;
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.article-body p {
+  margin-bottom: 1.5rem;
+}
+
+.article-body h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2.25rem;
+  margin-bottom: 0.9rem;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.article-body h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.6rem;
+  color: var(--ink);
+}
+
+/* ──────────────────────────────────────────────
+   Broadsheet tables — shared by MDX articles
+   (.article-body / .prose) and raw NeuraFeed HTML
+   (.neurafeed-article-body), which bypasses the
+   React table components.
+────────────────────────────────────────────── */
+
+.article-body table,
+.prose table,
+.neurafeed-article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  border: 1px solid var(--hairline);
+}
+
+.article-body thead,
+.prose thead,
+.neurafeed-article-body thead {
+  background: var(--faint);
+}
+
+.article-body th,
+.prose th,
+.neurafeed-article-body th {
+  font-family: var(--font-source-serif), Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  color: var(--ink);
+  border-bottom: 2px solid var(--rule);
+}
+
+.article-body td,
+.prose td,
+.neurafeed-article-body td {
+  padding: 0.6rem 0.75rem;
+  vertical-align: top;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--hairline);
+  border-right: 1px solid var(--hairline);
+}
+
+.article-body td:last-child,
+.prose td:last-child,
+.neurafeed-article-body td:last-child {
+  border-right: 0;
+}
+
+.article-body tbody tr:nth-child(even),
+.prose tbody tr:nth-child(even),
+.neurafeed-article-body tbody tr:nth-child(even) {
+  background: var(--zebra);
+}
+
+.article-body tbody tr:last-child td,
+.prose tbody tr:last-child td,
+.neurafeed-article-body tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table-wrap,
+.nf-table-wrap {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.table-wrap table,
+.nf-table-wrap table {
+  margin: 0;
+}
+
+/* ──────────────────────────────────────────────
+   Broadsheet lists — Tailwind preflight strips
+   bullets/numbers, so raw NeuraFeed <ul>/<ol>
+   otherwise render as plain paragraphs.
+────────────────────────────────────────────── */
+
+.article-body ul,
+.neurafeed-article-body ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 1.25rem 0;
+}
+
+.article-body ol,
+.neurafeed-article-body ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  margin: 1.25rem 0;
+}
+
+.article-body li,
+.neurafeed-article-body li {
+  margin-bottom: 0.6rem;
+  padding-left: 0.25rem;
+}
+
+.article-body li::marker,
+.neurafeed-article-body li::marker {
+  color: var(--rule);
+}
+
+.article-body li > strong:first-child,
+.neurafeed-article-body li > strong:first-child {
+  color: var(--ink);
+}
+
+/* ──────────────────────────────────────────────
+   Broadsheet pull-quotes
+────────────────────────────────────────────── */
+
+.article-body blockquote,
+.neurafeed-article-body blockquote {
+  border-left: 2px solid var(--rule);
+  padding-left: 1.25rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.article-body blockquote p,
+.neurafeed-article-body blockquote p {
+  margin-bottom: 0.75rem;
+}
+
+.article-body blockquote cite,
+.neurafeed-article-body blockquote cite {
+  display: block;
+  font-style: normal;
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--ink-3);
+  margin-top: 0.5rem;
+}
+
+/* ──────────────────────────────────────────────
+   Injected media figures + raw feed figures
+────────────────────────────────────────────── */
+
+.article-body figure,
+.neurafeed-article-body figure,
+.nf-media {
+  margin: 2rem 0;
+}
+
+.article-body figure img,
+.neurafeed-article-body figure img,
+.nf-media img {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--fill);
+}
+
+.article-body figcaption,
+.neurafeed-article-body figcaption,
+.nf-media figcaption {
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--hairline);
+  padding: 0.6rem 0;
+}
+
+.article-body figcaption a,
+.neurafeed-article-body figcaption a,
+.nf-media figcaption a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.article-body figcaption a:hover,
+.neurafeed-article-body figcaption a:hover,
+.nf-media figcaption a:hover {
+  color: var(--ink);
+}
+
+/* Responsive video embeds (YouTube nocookie) */
+.nf-embed {
+  margin: 2rem 0;
+}
+
+.nf-embed-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #111;
+}
+
+.nf-embed-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.nf-embed figcaption {
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--hairline);
+  padding: 0.6rem 0;
+}
+
+/* ──────────────────────────────────────────────
+   Dark mode — follows the device/browser setting.
+   Plain (unlayered) selectors win over Tailwind's
+   layered utilities, so this one block re-skins
+   every neutral/zinc/white surface site-wide
+   (public pages + admin) with zero TSX changes.
+────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  /* Surfaces */
+  .bg-white {
+    background-color: var(--paper);
+  }
+
+  .bg-neutral-50,
+  .bg-zinc-50 {
+    background-color: var(--faint);
+  }
+
+  .bg-neutral-100,
+  .bg-zinc-100 {
+    background-color: var(--fill);
+  }
+
+  .bg-neutral-200,
+  .bg-zinc-200 {
+    background-color: #2a2925;
+  }
+
+  /* Text */
+  .text-neutral-900,
+  .text-neutral-800,
+  .text-zinc-900,
+  .text-zinc-800 {
+    color: var(--ink);
+  }
+
+  .text-neutral-700,
+  .text-neutral-600,
+  .text-zinc-700,
+  .text-zinc-600 {
+    color: var(--ink-2);
+  }
+
+  .text-neutral-500,
+  .text-zinc-500 {
+    color: var(--ink-3);
+  }
+
+  .text-neutral-400,
+  .text-zinc-400 {
+    color: #97938a;
+  }
+
+  .text-accent {
+    color: #8ba7bb;
+  }
+
+  /* Hairlines & rules */
+  .border-neutral-200,
+  .border-zinc-200,
+  .divide-neutral-200,
+  .divide-zinc-200 {
+    border-color: var(--hairline);
+  }
+
+  .border-neutral-300,
+  .border-zinc-300,
+  .decoration-neutral-300 {
+    border-color: #3a3935;
+  }
+
+  .decoration-neutral-300 {
+    text-decoration-color: #3a3935;
+  }
+
+  .border-neutral-900,
+  .border-zinc-900 {
+    border-color: var(--rule);
+  }
+
+  /* Hover states that pointed at black */
+  .hover\:text-black:hover,
+  .hover\:text-zinc-900:hover {
+    color: var(--ink);
+  }
+
+  .hover\:bg-zinc-50:hover,
+  .hover\:bg-zinc-100:hover {
+    background-color: var(--fill);
+  }
+
+  .hover\:border-zinc-400:hover,
+  .hover\:border-neutral-900:hover {
+    border-color: var(--rule);
+  }
+
+  /* Inverted elements (dark button + light text) become
+     light button + dark text so they stay visible */
+  .bg-neutral-900.text-white,
+  .bg-zinc-900.text-white {
+    background-color: var(--ink);
+    color: #141412;
+    border-color: var(--ink);
+  }
+
+  .bg-neutral-900.text-white:hover,
+  .bg-zinc-900.text-white:hover,
+  .hover\:bg-black:hover,
+  .hover\:bg-zinc-800:hover {
+    background-color: #ffffff;
+    color: #141412;
+    border-color: #ffffff;
+  }
+
+  .border-zinc-900:not(.border-t-transparent) {
+    border-color: var(--ink-3);
+  }
+
+  /* Var-based components that need a nudge */
+  .bg-muted {
+    background-color: var(--fill);
+  }
+
+  .hover\:bg-muted:hover,
+  .btn-ghost:hover,
+  .btn-outline:hover {
+    background-color: var(--fill);
+  }
+
+  .badge-secondary {
+    background-color: var(--fill);
+    color: var(--ink);
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, #232220 25%, #2e2d29 50%, #232220 75%);
+    background-size: 200% 100%;
+  }
 }

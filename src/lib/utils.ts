@@ -37,6 +37,16 @@ export function truncate(text: string, length: number): string {
     return text.slice(0, length) + "...";
 }
 
+/**
+ * Calendar-week key (Monday date, UTC) for the denormalized weeklyViews
+ * counter used by trending rankings.
+ */
+export function currentWeekKeyUTC(now: Date = new Date()): string {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+    return d.toISOString().slice(0, 10);
+}
+
 export function getBaseUrl(): string {
     if (typeof window !== "undefined") return "";
     if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;

@@ -24,27 +24,27 @@ const socialLinks = [
 
 export default function ContactPage() {
     return (
-        <div className="min-h-screen bg-[color:var(--color-bg-primary)]">
-            <section className="border-b border-default">
-                <div className="mx-auto max-w-4xl px-4 py-14 md:px-6 md:py-18">
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-accent">Contact</p>
-                    <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight text-primary md:text-5xl">
+        <div className="min-h-screen bg-white">
+            <section className="border-b border-neutral-200">
+                <div className="mx-auto max-w-3xl px-4 py-14 md:py-16">
+                    <p className="kicker">Contact</p>
+                    <h1 className="font-display mt-4 max-w-3xl text-4xl font-black leading-tight text-neutral-900 md:text-5xl">
                         Reach the newsroom directly.
                     </h1>
-                    <p className="mt-6 max-w-2xl text-base leading-8 text-secondary md:text-lg">
+                    <p className="mt-6 max-w-2xl text-base leading-8 text-neutral-700 md:text-lg">
                         If you have a story tip, a correction, a partnership request, or a general question, send it through directly. We keep the contact page simple for the same reason we keep the reporting simple.
                     </p>
 
                     <div className="mt-8 flex flex-wrap gap-3">
                         <a
                             href="mailto:hello@chainew.com"
-                            className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-secondary"
+                            className="inline-flex items-center justify-center border border-neutral-900 bg-neutral-900 px-5 py-3 text-sm font-semibold text-white hover:bg-black"
                         >
                             Email Chainew
                         </a>
                         <Link
                             href="/about"
-                            className="inline-flex items-center justify-center rounded-full border border-default px-5 py-3 text-sm font-semibold text-primary transition-colors hover:border-hover hover:bg-muted/50"
+                            className="inline-flex items-center justify-center border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-900 hover:border-neutral-900"
                         >
                             About Chainew
                         </Link>
@@ -52,16 +52,16 @@ export default function ContactPage() {
                 </div>
             </section>
 
-            <section className="mx-auto grid max-w-4xl gap-10 px-4 py-14 md:px-6 md:py-18 lg:grid-cols-[1.1fr_0.9fr]">
+            <section className="mx-auto grid max-w-3xl gap-10 px-4 py-14 lg:grid-cols-[1.1fr_0.9fr]">
                 <div>
-                    <h2 className="text-2xl font-black text-primary md:text-3xl">Where to reach us</h2>
-                    <div className="mt-6 space-y-4">
+                    <h2 className="font-display text-2xl font-bold text-neutral-900">Where to reach us</h2>
+                    <div className="mt-6 space-y-6">
                         {contactWays.map((item) => (
-                        <div key={item.title} className="rounded-3xl border border-default bg-card p-6">
-                            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">
+                        <div key={item.title} className="border-t border-neutral-200 pt-5">
+                            <p className="kicker">
                             {item.title}
                             </p>
-                            <p className="mt-3 text-sm leading-7 text-secondary md:text-base">
+                            <p className="mt-3 text-sm leading-7 text-neutral-700 md:text-base">
                             {item.description}
                             </p>
 
@@ -70,12 +70,12 @@ export default function ContactPage() {
                                 href={item.href}
                                 target={item.href.startsWith("http") ? "_blank" : undefined}
                                 rel={item.href.startsWith("http") ? "noreferrer" : undefined}
-                                className="mt-4 inline-flex font-semibold text-primary underline decoration-default underline-offset-4 hover:text-secondary"
+                                className="mt-3 inline-block text-sm font-semibold text-neutral-900 underline underline-offset-4"
                             >
                                 {item.value}
                             </a>
                             ) : (
-                            <span className="mt-4 inline-flex font-semibold text-muted">
+                            <span className="mt-3 inline-block text-sm font-semibold text-neutral-400">
                                 {item.value}
                             </span>
                             )}
@@ -84,9 +84,9 @@ export default function ContactPage() {
                     </div>
                 </div>
 
-                <div className="rounded-3xl border border-default bg-card p-6">
-                    <h2 className="text-2xl font-black text-primary">Elsewhere</h2>
-                    <p className="mt-4 text-sm leading-7 text-secondary md:text-base">
+                <div className="border-t-2 border-neutral-900 pt-5">
+                    <h2 className="font-display text-2xl font-bold text-neutral-900">Elsewhere</h2>
+                    <p className="mt-4 text-sm leading-7 text-neutral-700 md:text-base">
                         Follow updates or reach out through the public profiles below.
                     </p>
 
@@ -97,7 +97,7 @@ export default function ContactPage() {
                                 href={social.href}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="rounded-2xl border border-default px-4 py-4 text-sm font-semibold text-primary transition-colors hover:border-hover hover:bg-muted/50"
+                                className="border border-neutral-200 px-4 py-3 text-sm font-semibold text-neutral-900 hover:border-neutral-900"
                             >
                                 {social.name}
                             </a>
@@ -106,10 +106,10 @@ export default function ContactPage() {
                 </div>
             </section>
 
-            <section className="border-t border-default bg-card">
-                <div className="mx-auto max-w-4xl px-4 py-14 md:px-6 md:py-18">
-                    <h2 className="text-2xl font-black text-primary md:text-3xl">What to send</h2>
-                    <div className="mt-5 space-y-5 text-base leading-8 text-secondary">
+            <section className="border-t border-neutral-200">
+                <div className="mx-auto max-w-3xl px-4 py-14">
+                    <h2 className="font-display text-2xl font-bold text-neutral-900">What to send</h2>
+                    <div className="mt-5 space-y-5 text-base leading-8 text-neutral-700">
                         <p>
                             The most useful messages are specific. Include the link, source, person, or event you want us to look at, and explain why it matters.
                         </p>

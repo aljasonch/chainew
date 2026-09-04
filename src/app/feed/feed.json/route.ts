@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { listPublishedForFeeds } from "@/lib/firestore";
 
+export const revalidate = 600;
+
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export async function GET() {

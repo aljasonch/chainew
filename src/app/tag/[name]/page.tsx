@@ -10,6 +10,8 @@ async function getArticlesByTag(tag: string) {
     return listPublishedByTag(tag);
 }
 
+export const revalidate = 300;
+
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
@@ -28,31 +30,32 @@ export default async function TagPage({ params }: PageProps) {
     const articles = await getArticlesByTag(decodedName);
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-zinc-900 mb-2">
-                    Tag: {decodedName}
+        <div className="bg-white">
+            <div className="mx-auto max-w-3xl px-4 py-8 md:py-12">
+                <p className="kicker">Tag</p>
+                <h1 className="font-display mt-2 text-3xl font-black text-neutral-900 md:text-4xl">
+                    {decodedName}
                 </h1>
-                <p className="text-zinc-500">
+                <p className="mt-3 border-b-2 border-neutral-900 pb-6 text-sm text-neutral-500">
                     {articles.length} article{articles.length !== 1 ? "s" : ""} with this
                     tag
                 </p>
-            </header>
 
-            {articles.length === 0 ? (
-                <div className="text-center py-16">
-                    <p className="text-zinc-500">No articles found with this tag.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {articles.map((article) => (
-                        <ArticleCard
-                            key={String(article._id)}
-                            article={JSON.parse(JSON.stringify(article))}
-                        />
-                    ))}
-                </div>
-            )}
+                {articles.length === 0 ? (
+                    <div className="py-16 text-center">
+                        <p className="text-neutral-500">No articles found with this tag.</p>
+                    </div>
+                ) : (
+                    <div className="mt-2">
+                        {articles.map((article) => (
+                            <ArticleCard
+                                key={String(article._id)}
+                                article={JSON.parse(JSON.stringify(article))}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

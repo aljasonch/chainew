@@ -2,9 +2,13 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { listPublishedByCategory } from "@/lib/firestore";
 import { Pagination } from "@/components/ui/Pagination";
+import { SmartImage } from "@/components/SmartImage";
 import { IArticle } from "@/types";
 
 const ITEMS_PER_PAGE = 18;
+
+// Category listings change only on publish; serve cached HTML per URL.
+export const revalidate = 300;
 
 interface PageProps {
     params: Promise<{ name: string }>;
@@ -111,17 +115,18 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     return (
         <div className="bg-white">
             <div className="max-w-6xl mx-auto px-4 py-8 md:py-10">
-                <header className="mb-8 border-b border-neutral-300 pb-4">
-                    <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">
+                <header className="mb-8 border-b-2 border-neutral-900 pb-6">
+                    <p className="kicker">Section</p>
+                    <h1 className="font-display mt-2 text-3xl font-black tracking-tight text-neutral-900 md:text-4xl">
                         {categoryName}
                     </h1>
-                    <p className="mt-2 text-sm text-neutral-600">
+                    <p className="mt-2 text-sm text-neutral-500">
                         {total} {total === 1 ? "story" : "stories"}
                     </p>
                 </header>
 
                 {total === 0 ? (
-                    <div className="rounded-md border border-neutral-300 bg-white px-6 py-16 text-center">
+                    <div className="border border-neutral-200 bg-white px-6 py-16 text-center">
                         <p className="text-neutral-600">No articles found in this category.</p>
                     </div>
                 ) : (
@@ -129,8 +134,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                         {heroArticle && (
                             <section className="grid gap-6 md:grid-cols-[1fr_1.9fr] md:items-start">
                                 <article>
-                                    <Link href={`/article/${heroArticle.slug}`} className="group block">
-                                        <h2 className="text-[1.85rem] font-bold leading-[1.1] text-neutral-900 transition-colors group-hover:text-neutral-700 md:text-[2.45rem]">
+                                    <Link href={`/article/${heroArticle.slug}`} className="headline-link block">
+                                        <h2 className="font-display text-[1.85rem] font-black leading-[1.1] text-neutral-900 md:text-[2.45rem]">
                                             {heroArticle.title}
                                         </h2>
                                     </Link>
@@ -144,31 +149,28 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                                     )}
                                 </article>
 
-                                <Link
-                                    href={`/article/${heroArticle.slug}`}
-                                    className="block overflow-hidden bg-neutral-200"
-                                >
-                                    {getImageUrl(heroArticle) ? (
-                                        <img
-                                            src={getImageUrl(heroArticle) as string}
+                                {getImageUrl(heroArticle) && (
+                                    <Link
+                                        href={`/article/${heroArticle.slug}`}
+                                        className="block h-[280px] overflow-hidden md:h-[390px]"
+                                        aria-label={heroArticle.title}
+                                    >
+                                        <SmartImage
+                                            src={getImageUrl(heroArticle)}
                                             alt={heroArticle.title}
-                                            className="h-[280px] w-full object-cover md:h-[390px]"
+                                            eager
                                         />
-                                    ) : (
-                                        <div className="flex h-[280px] w-full items-center justify-center bg-neutral-300 text-sm font-medium text-neutral-600 md:h-[390px]">
-                                            Image unavailable
-                                        </div>
-                                    )}
-                                </Link>
+                                    </Link>
+                                )}
                             </section>
                         )}
 
                         {topStripArticles.length > 0 && (
-                            <section className="mt-6 grid gap-6 border-b border-neutral-300 pb-6 md:grid-cols-3">
+                            <section className="mt-6 grid gap-6 border-b border-neutral-200 pb-6 md:grid-cols-3">
                                 {topStripArticles.map((article) => (
                                     <article key={article._id}>
-                                        <Link href={`/article/${article.slug}`} className="group block">
-                                            <h3 className="text-[1.45rem] font-bold leading-[1.14] text-neutral-900 transition-colors group-hover:text-neutral-700 md:text-[1.65rem]">
+                                        <Link href={`/article/${article.slug}`} className="headline-link block">
+                                            <h3 className="font-display text-[1.45rem] font-bold leading-[1.14] text-neutral-900 md:text-[1.6rem]">
                                                 {article.title}
                                             </h3>
                                         </Link>
@@ -183,7 +185,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                         )}
 
                         {fourColumnGroups.length > 0 && (
-                            <section className="mt-5 border-b border-neutral-300 pb-6">
+                            <section className="mt-5 border-b border-neutral-200 pb-6">
                                 <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
                                     {fourColumnGroups.map((group, columnIndex) => {
                                         const firstArticle = group[0];
@@ -195,26 +197,22 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
                                         return (
                                             <div key={`${firstArticle._id}-${columnIndex}`} className="space-y-3">
-                                                <Link
-                                                    href={`/article/${firstArticle.slug}`}
-                                                    className="block overflow-hidden bg-neutral-200"
-                                                >
-                                                    {getImageUrl(firstArticle) ? (
-                                                        <img
-                                                            src={getImageUrl(firstArticle) as string}
+                                                {getImageUrl(firstArticle) && (
+                                                    <Link
+                                                        href={`/article/${firstArticle.slug}`}
+                                                        className="block h-[180px] overflow-hidden"
+                                                        aria-label={firstArticle.title}
+                                                    >
+                                                        <SmartImage
+                                                            src={getImageUrl(firstArticle)}
                                                             alt={firstArticle.title}
-                                                            className="h-[180px] w-full object-cover"
                                                         />
-                                                    ) : (
-                                                        <div className="flex h-[180px] w-full items-center justify-center bg-neutral-300 text-sm font-medium text-neutral-600">
-                                                            Image unavailable
-                                                        </div>
-                                                    )}
-                                                </Link>
+                                                    </Link>
+                                                )}
 
                                                 <div>
-                                                    <Link href={`/article/${firstArticle.slug}`} className="group block">
-                                                        <h3 className="text-[1.3rem] font-bold leading-[1.16] text-neutral-900 transition-colors group-hover:text-neutral-700 md:text-[1.45rem]">
+                                                    <Link href={`/article/${firstArticle.slug}`} className="headline-link block">
+                                                        <h3 className="font-display text-[1.3rem] font-bold leading-[1.16] text-neutral-900 md:text-[1.4rem]">
                                                             {firstArticle.title}
                                                         </h3>
                                                     </Link>
@@ -226,9 +224,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                                                 </div>
 
                                                 {secondArticle && (
-                                                    <div className="border-t border-neutral-300 pt-3">
-                                                        <Link href={`/article/${secondArticle.slug}`} className="group block">
-                                                            <h4 className="text-xl font-bold leading-[1.18] text-neutral-900 transition-colors group-hover:text-neutral-700 md:text-2xl">
+                                                    <div className="border-t border-neutral-200 pt-3">
+                                                        <Link href={`/article/${secondArticle.slug}`} className="headline-link block">
+                                                            <h4 className="font-display text-xl font-bold leading-[1.18] text-neutral-900">
                                                                 {secondArticle.title}
                                                             </h4>
                                                         </Link>
@@ -248,7 +246,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
                         {listStories.length > 0 && (
                             <section className="mt-5">
-                                <div className="divide-y divide-neutral-300">
+                                <div className="divide-y divide-neutral-200">
                                     {listStories.map((article) => (
                                         <article
                                             key={article._id}
@@ -259,8 +257,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                                                     {categoryName}
                                                     {article.publishedAt && ` • ${formatLongDate(article.publishedAt)}`}
                                                 </p>
-                                                <Link href={`/article/${article.slug}`} className="group block">
-                                                    <h3 className="mt-2 text-xl font-bold leading-[1.14] text-neutral-900 transition-colors group-hover:text-neutral-700 md:text-3xl">
+                                                <Link href={`/article/${article.slug}`} className="headline-link block">
+                                                    <h3 className="mt-2 font-display text-xl font-bold leading-[1.14] text-neutral-900 md:text-[1.7rem]">
                                                         {article.title}
                                                     </h3>
                                                 </Link>
@@ -269,22 +267,18 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                                                 </p>
                                             </div>
 
-                                            <Link
-                                                href={`/article/${article.slug}`}
-                                                className="block overflow-hidden bg-neutral-200"
-                                            >
-                                                {getImageUrl(article) ? (
-                                                    <img
-                                                        src={getImageUrl(article) as string}
+                                            {getImageUrl(article) && (
+                                                <Link
+                                                    href={`/article/${article.slug}`}
+                                                    className="block h-[180px] overflow-hidden md:h-[210px]"
+                                                    aria-label={article.title}
+                                                >
+                                                    <SmartImage
+                                                        src={getImageUrl(article)}
                                                         alt={article.title}
-                                                        className="h-[180px] w-full object-cover md:h-[210px]"
                                                     />
-                                                ) : (
-                                                    <div className="flex h-[180px] w-full items-center justify-center bg-neutral-300 text-sm font-medium text-neutral-600 md:h-[210px]">
-                                                        Image unavailable
-                                                    </div>
-                                                )}
-                                            </Link>
+                                                </Link>
+                                            )}
                                         </article>
                                     ))}
                                 </div>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { listPublishedForNewsSitemap } from "@/lib/firestore";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 600;
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 

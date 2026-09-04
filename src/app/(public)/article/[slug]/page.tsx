@@ -1,16 +1,16 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { Badge } from "@/components/ui/Badge";
+import { cache } from "react";
+import { after } from "next/server";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { formatDate, getBaseUrl } from "@/lib/utils";
-import { ArrowLeft, Eye } from "lucide-react";
 import { headers } from "next/headers";
 import { compileMDX } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { preprocessCitations } from "@/lib/remark-citations";
 import { mdxComponents } from "@/components/markdown/components";
-import { sanitizeNeuraFeedHtml } from "@/lib/neurafeed";
+import { sanitizeNeuraFeedHtml, injectNeuraFeedMedia } from "@/lib/neurafeed";
 import { normalizeMarkdownListMarkers } from "@/lib/markdown";
 import { getArticleBySlug, trackArticleView as trackFirestoreArticleView } from "@/lib/firestore";
 
@@ -22,30 +22,28 @@ async function getArticle(slug: string) {
     return getArticleBySlug(slug, "published");
 }
 
-async function trackArticleViewByRequest(articleId: string): Promise<number | null> {
-    try {
-        const headersList = await headers();
-        let ip = headersList.get("x-forwarded-for");
-        if (!ip) {
-            ip = headersList.get("x-real-ip");
-        }
-        if (!ip) {
-            return null;
-        }
-        const finalIp = ip.split(",")[0].trim();
+// generateMetadata + page component run in the same request —
+// dedupe so the article document is read once, not twice.
+const getCachedArticle = cache(getArticle);
 
-        return await trackFirestoreArticleView(articleId, finalIp);
+async function trackArticleViewByRequest(articleId: string, ip: string): Promise<number | null> {
+    try {
+        return await trackFirestoreArticleView(articleId, ip);
     } catch (error: unknown) {
         console.error("Error tracking article view:", error);
         return null;
     }
 }
 
+// Crawlers must not count as readers (or burn writes).
+const BOT_UA_RE =
+    /bot|crawl|spider|slurp|mediapartners|baidu|yandex|sogou|exabot|facebot|ia_archiver|ahrefs|semrush|mj12|dotbot|applebot|facebookexternalhit|twitterbot|linkedinbot|embedly|quora|pinterest|slackbot|discordbot|telegrambot|whatsapp|googlebot|bingbot|duckduckbot/i;
+
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
     const { slug } = await params;
-    const article = await getArticle(slug);
+    const article = await getCachedArticle(slug);
 
     if (!article) {
         return {
@@ -87,17 +85,26 @@ export async function generateMetadata({
 
 export default async function ArticlePage({ params }: PageProps) {
     const { slug } = await params;
-    const article = await getArticle(slug);
+    const article = await getCachedArticle(slug);
 
-    // Check if article exists before proceeding
     if (!article) {
         notFound();
     }
 
-    // Track view and get updated view count
-    const updatedViewCount = await trackArticleViewByRequest(article._id);
-    if (updatedViewCount !== null) {
-        article.views = updatedViewCount;
+    // View tracking must never delay the render, so it runs in after()
+    // with headers read up front (request scope is gone by then).
+    const headersList = await headers();
+    const userAgent = headersList.get("user-agent") ?? "";
+    const rawIp =
+        headersList.get("x-forwarded-for") ?? headersList.get("x-real-ip") ?? "";
+    const ip = rawIp.split(",")[0].trim();
+    if (ip && !BOT_UA_RE.test(userAgent)) {
+        const articleId = article._id;
+        after(() => {
+            trackArticleViewByRequest(articleId, ip).catch((error: unknown) => {
+                console.error("Error tracking article view:", error);
+            });
+        });
     }
 
     const authorName =
@@ -107,7 +114,6 @@ export default async function ArticlePage({ params }: PageProps) {
 
     const isNeuraFeed = (article as unknown as { source?: string }).source === "neurafeed";
 
-    // Only compile MDX for manually written articles
     let content: React.ReactNode = null;
     if (!isNeuraFeed && article.content_mdx) {
         const compiled = await compileMDX({
@@ -126,102 +132,137 @@ export default async function ArticlePage({ params }: PageProps) {
         <>
             <JsonLd article={JSON.parse(JSON.stringify(article))} />
 
-            <article className="max-w-4xl mx-auto px-4 py-8">
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 mb-6"
-                >
-                    <ArrowLeft size={18} />
-                    Back to Home
-                </Link>
+            <article className="bg-white">
+                <div className="mx-auto max-w-3xl px-4 py-8 md:py-12">
+                    <Link
+                        href="/"
+                        className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500 hover:text-black hover:underline underline-offset-4"
+                    >
+                        ← Home
+                    </Link>
 
-                <header className="mb-8">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Link href={`/category/${article.category}`}>
-                            <Badge variant="secondary">{article.category}</Badge>
-                        </Link>
-                        {article.publishedAt && (
-                            <span className="text-zinc-500">
-                                {formatDate(article.publishedAt)}
-                            </span>
+                    <header className="mt-6">
+                        <p className="kicker">
+                            <Link href={`/category/${article.category}`} className="hover:text-black">
+                                {article.category}
+                            </Link>
+                        </p>
+
+                        <h1 className="font-display mt-3 text-3xl font-black leading-[1.12] text-neutral-900 md:text-[2.75rem]">
+                            {article.title}
+                        </h1>
+
+                        {article.subtitle && (
+                            <p className="font-display mt-4 text-lg leading-relaxed text-neutral-600 md:text-xl">
+                                {article.subtitle}
+                            </p>
                         )}
-                        <div className="flex items-center gap-1 text-zinc-500">
-                            <Eye size={16} />
-                            <span className="text-sm">{article.views || 0}</span>
+
+                        <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-neutral-200 py-3 text-sm text-neutral-600">
+                            <span>
+                                By <span className="font-semibold text-neutral-900">{authorName}</span>
+                            </span>
+                            {article.publishedAt && (
+                                <span className="text-neutral-500">
+                                    {formatDate(article.publishedAt)}
+                                </span>
+                            )}
+                            <span className="text-neutral-400">
+                                {article.views || 0} reads
+                            </span>
                         </div>
-                    </div>
+                    </header>
 
-                    <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-3">
-                        {article.title}
-                    </h1>
-
-                    {article.subtitle && (
-                        <p className="text-xl text-zinc-600 mb-4">{article.subtitle}</p>
+                    {article.seo.ogImageUrl && (
+                        <figure className="mt-8">
+                            <img
+                                src={article.seo.ogImageUrl}
+                                alt={article.title}
+                                className="w-full h-auto bg-neutral-100"
+                            />
+                            {article.coverCredit && (article.coverCredit.name || article.coverCredit.url) && (
+                                <figcaption className="border-b border-neutral-200 py-2 text-xs text-neutral-500">
+                                    Image{article.coverCredit.url ? (
+                                        <>
+                                            {" "}source:{" "}
+                                            <a
+                                                href={article.coverCredit.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="underline underline-offset-4 hover:text-neutral-900"
+                                            >
+                                                {article.coverCredit.name || article.coverCredit.url}
+                                            </a>
+                                        </>
+                                    ) : (
+                                        <>: {article.coverCredit.name}</>
+                                    )}
+                                </figcaption>
+                            )}
+                        </figure>
                     )}
 
-                    <p className="text-zinc-500 flex items-center gap-2">
-                        By {authorName}
+                    {article.embedMedia?.type === "youtube" && /^[\w-]{11}$/.test(article.embedMedia.id) && (
+                        <figure className="nf-embed mt-8">
+                            <div className="nf-embed-frame">
+                                <iframe
+                                    src={`https://www.youtube-nocookie.com/embed/${article.embedMedia.id}`}
+                                    title={article.embedMedia.title || "Embedded video"}
+                                    loading="lazy"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            </div>
+                            {article.embedMedia.title && (
+                                <figcaption className="border-b border-neutral-200 py-2 text-xs text-neutral-500">
+                                    Watch: {article.embedMedia.title}
+                                </figcaption>
+                            )}
+                        </figure>
+                    )}
+
+                    <p className="font-display mt-8 border-b border-neutral-200 pb-8 text-lg leading-8 text-neutral-800">
+                        {article.summary}
                     </p>
-                </header>
 
-                {article.seo.ogImageUrl && (
-                    <div className="mb-8">
-                        <img
-                            src={article.seo.ogImageUrl}
-                            alt={article.title}
-                            className="w-full h-auto rounded-lg"
+                    {isNeuraFeed ? (
+                        <div
+                            className="article-body mt-8"
+                            dangerouslySetInnerHTML={{
+                                __html: injectNeuraFeedMedia(
+                                    sanitizeNeuraFeedHtml(article.content_html || ""),
+                                    article.media
+                                )
+                            }}
                         />
-                    </div>
-                )}
+                    ) : (
+                        <div className="article-body mt-8">{content}</div>
+                    )}
 
-                <div className="bg-zinc-50 border-l-4 border-zinc-900 p-4 mb-8">
-                    <p className="text-zinc-700 font-medium">{article.summary}</p>
-                </div>
-
-                {/* Article body: HTML for NeuraFeed, MDX for manual articles */}
-                {isNeuraFeed ? (
-                    <div
-                        className="prose max-w-none neurafeed-article-body"
-                        dangerouslySetInnerHTML={{
-                            __html: sanitizeNeuraFeedHtml(
-                                (article as unknown as { content_html?: string }).content_html || ""
-                            )
-                        }}
-                    />
-                ) : (
-                    <div className="prose max-w-none">{content}</div>
-                )}
-
-                {article.tags && article.tags.length > 0 && (
-                    <div className="mt-8 pt-8 border-t border-zinc-200">
-                        <h3 className="text-sm font-medium text-zinc-500 mb-2">Tags</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {article.tags.map((tag) => (
-                                <Link key={tag} href={`/tag/${tag}`}>
-                                    <Badge
-                                        variant="secondary"
-                                        className="cursor-pointer hover:bg-zinc-300"
+                    {article.tags && article.tags.length > 0 && (
+                        <div className="mt-10 border-t border-neutral-200 pt-6">
+                            <p className="kicker">Filed under</p>
+                            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+                                {article.tags.map((tag) => (
+                                    <Link
+                                        key={tag}
+                                        href={`/tag/${tag}`}
+                                        className="text-sm text-neutral-700 underline decoration-neutral-300 underline-offset-4 hover:text-black"
                                     >
                                         {tag}
-                                    </Badge>
-                                </Link>
-                            ))}
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {article.sources && article.sources.length > 0 && (
-                    <div className="mt-8 pt-8 border-t border-zinc-200">
-                        <h3 className="text-lg font-semibold text-zinc-900 mb-4">
-                            Sources
-                        </h3>
-                        <ol className="space-y-2 list-none p-0">
-                            {article.sources.map((source, index) => {
-                                // Support both plain { name, url } objects stored in DB
-                                // and display citation numbers if available
-                                return (
+                    {article.sources && article.sources.length > 0 && (
+                        <div className="mt-10 border-t border-neutral-200 pt-6">
+                            <p className="kicker">Sources</p>
+                            <ol className="mt-4 space-y-2">
+                                {article.sources.map((source, index) => (
                                     <li key={index} id={`src-${index + 1}`} className="flex items-start gap-2 text-sm scroll-mt-24">
-                                        <span className="text-blue-500 font-mono text-xs shrink-0 mt-0.5">
+                                        <span className="shrink-0 font-mono text-xs text-neutral-400">
                                             [{index + 1}]
                                         </span>
                                         {source.url ? (
@@ -229,19 +270,19 @@ export default async function ArticlePage({ params }: PageProps) {
                                                 href={source.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-blue-600 hover:underline break-all font-mono text-xs"
+                                                className="break-all text-neutral-700 underline decoration-neutral-300 underline-offset-4 hover:text-black"
                                             >
                                                 {source.name}
                                             </a>
                                         ) : (
-                                            <span className="text-zinc-600">{source.name}</span>
+                                            <span className="text-neutral-600">{source.name}</span>
                                         )}
                                     </li>
-                                );
-                            })}
-                        </ol>
-                    </div>
-                )}
+                                ))}
+                            </ol>
+                        </div>
+                    )}
+                </div>
             </article>
         </>
     );

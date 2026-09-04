@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Montserrat, Source_Serif_4 } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { RouteLoadingIndicator } from "@/components/RouteLoadingIndicator";
@@ -52,6 +52,11 @@ const organizationStructuredData = {
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
+});
+
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-source-serif",
 });
 
 export const metadata: Metadata = {
@@ -108,13 +113,20 @@ export const metadata: Metadata = {
   category: "technology",
 };
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#141412" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={montserrat.variable}>
+    <html lang="en" className={`${montserrat.variable} ${sourceSerif.variable}`}>
       <body className="antialiased font-sans" style={{ background: 'var(--color-bg-primary)' }}>
         <script
           type="application/ld+json"

@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { listPublishedCategories, listPublishedForSitemap } from "@/lib/firestore";
+import { listPublishedForSitemap } from "@/lib/firestore";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export async function GET() {
-  const [articles, categories] = await Promise.all([
-    listPublishedForSitemap(),
-    listPublishedCategories(),
-  ]);
+    const articles = await listPublishedForSitemap();
+    const categories = Array.from(
+        new Set(articles.map((article) => article.category).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

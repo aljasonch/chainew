@@ -17,11 +17,14 @@ import {
     findArticleByNeuraFeedId,
     getLatestNeuraFeedImport,
     getOrCreateNeuraFeedUser,
+    pruneOldViews,
+    resetStaleWeeklyViews,
 } from "@/lib/firestore";
 import {
     fetchLatestNeuraFeedArticle,
     detectCategory,
-    parseNeuraFeedSources,
+    resolveNeuraFeedSources,
+    normalizeNeuraFeedEmbed,
     buildSlug,
     sanitizeNeuraFeedHtml,
 } from "@/lib/neurafeed";
@@ -53,6 +56,20 @@ function isCronAuthorized(request: NextRequest): boolean {
 }
 
 async function runNeuraFeedSync() {
+    // Daily housekeeping rides along with the sync (no scheduler needed):
+    // reset last week's counters and prune old view logs. Failures here
+    // must never block the import.
+    try {
+        await resetStaleWeeklyViews();
+    } catch (err) {
+        console.error("[NeuraFeed sync] weekly reset failed:", err);
+    }
+    try {
+        await pruneOldViews();
+    } catch (err) {
+        console.error("[NeuraFeed sync] view prune failed:", err);
+    }
+
     // 1. Fetch latest article from NeuraFeed
     const nfArticle = await fetchLatestNeuraFeedArticle();
     if (!nfArticle) {
@@ -110,8 +127,16 @@ async function runNeuraFeedSync() {
     // 6. Transform NeuraFeed → Chainew article shape
     const category = detectCategory(nfArticle.topic, nfArticle.title);
     const slug = buildSlug(nfArticle.title, nfArticle.createdAt);
-    const sources = parseNeuraFeedSources(nfArticle.sources);
+    const sources = resolveNeuraFeedSources(nfArticle);
     const content_html = sanitizeNeuraFeedHtml(nfArticle.article);
+    const embedMedia = normalizeNeuraFeedEmbed(nfArticle.embedMedia);
+    const coverCredit =
+        nfArticle.imageSource || nfArticle.imageSourceUrl
+            ? {
+                ...(nfArticle.imageSource ? { name: nfArticle.imageSource } : {}),
+                ...(nfArticle.imageSourceUrl ? { url: nfArticle.imageSourceUrl } : {}),
+            }
+            : undefined;
 
     // 7. Insert into Firestore
     let article;
@@ -143,6 +168,9 @@ async function runNeuraFeedSync() {
             publishedAt: new Date(nfArticle.createdAt),
             source: "neurafeed",
             neuraFeedId: nfArticle.id,
+            media: nfArticle.media ?? [],
+            ...(coverCredit ? { coverCredit } : {}),
+            ...(embedMedia ? { embedMedia } : {}),
         });
     } catch (err: unknown) {
         if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "already-exists") {
